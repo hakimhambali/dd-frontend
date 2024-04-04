@@ -123,54 +123,27 @@ getUsers()
                         </tr>
                     </thead>
                     <tbody>
-                        <template v-if="loading">
-                            <tr>
-                                <td>
-                                    <div class="placeholder-glow">
-                                        <span class="placeholder col-12"></span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="placeholder-glow">
-                                        <span class="placeholder col-12"></span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="placeholder-glow">
-                                        <span class="placeholder col-12"></span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="placeholder-glow">
-                                        <span class="placeholder col-12"></span>
+                        <template v-if="users.length > 0">
+                            <tr class="align-middle" v-for="(user, index) in users" :key="user.id">
+                                <td>{{ index + 1 }}</td>
+                                <td>{{ user.name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <button class="btn btn-icon btn-primary" @click="showUser(user.id)">
+                                            <BaseIcon name="eye" />
+                                        </button>
+                                        <button class="btn btn-icon btn-danger" @click="deleteUser(user.id)">
+                                            <BaseIcon name="trash" />
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         </template>
-
                         <template v-else>
-                            <template v-if="users.length > 0">
-                                <tr class="align-middle" v-for="(user, index) in users" :key="user.id">
-                                    <td>{{ index + 1 }}</td>
-                                    <td>{{ user.name }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td class="text-center">
-                                        <div class="btn-group">
-                                            <button class="btn btn-icon btn-primary" @click="showUser(user.id)">
-                                                <BaseIcon name="eye" />
-                                            </button>
-                                            <button class="btn btn-icon btn-danger" @click="deleteUser(user.id)">
-                                                <BaseIcon name="trash" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                            <template v-else>
-                                <tr class="text-center">
-                                    <td colspan="4">No data</td>
-                                </tr>
-                            </template>
+                            <tr class="text-center">
+                                <td colspan="4">No data</td>
+                            </tr>
                         </template>
                     </tbody>
                 </table>
