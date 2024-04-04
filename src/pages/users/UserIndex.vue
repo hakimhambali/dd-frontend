@@ -68,7 +68,25 @@ const showUser = async (id: number) => {
 }
 
 const deleteUser = async (id: number): Promise<void> => {
-    
+    loading.value = true
+
+    try {
+        await UserService.delete(id)
+        addToast({
+            type: 'success',
+            message: 'User is successfully deleted.'
+        })
+        await getUsers()
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            addToast({
+                type: 'danger',
+                message: error.response?.data.message
+            })
+        }
+    }
+
+    loading.value = false
 }
 
 watch(
