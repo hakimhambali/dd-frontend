@@ -38,11 +38,11 @@ const addUser = async () => {
     } catch (error) {
 
     }
+
+    isAdding.value = false
 }
 
 const clearInput = () => {
-    isAdding.value = false
-
     input.value.name = ''
     input.value.email = ''
 }
