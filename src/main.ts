@@ -2,6 +2,7 @@ import App from '@/App.vue'
 import BaseAlert from '@/components/BaseAlert.vue'
 import BaseIcon from '@/components/BaseIcon.vue'
 import BaseModal from '@/components/BaseModal.vue'
+import BasePrompt from '@/components/BasePrompt.vue'
 import SpinnerOverlay from '@/components/SpinnerOverlay.vue'
 import TablePagination from '@/components/TablePagination.vue'
 import router from '@/router'
@@ -24,6 +25,7 @@ app
     .component('BaseAlert', BaseAlert)
     .component('BaseIcon', BaseIcon)
     .component('BaseModal', BaseModal)
+    .component('BasePrompt', BasePrompt)
     .component('Pagination', TablePagination)
     .component('SpinnerOverlay', SpinnerOverlay)
     .component('v-select', VueSelect)
