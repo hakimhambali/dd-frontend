@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { LoginRule } from '@/rules/LoginRule'
 import AuthService from '@/services/AuthService'
-import { useToastStore } from '@/stores/toast'
 import useIsAuthStore from '@/stores/auth'
+import { useToastStore } from '@/stores/toast'
 import type Login from '@/types/Login'
 import useVuelidate from '@vuelidate/core'
-import { AxiosError, isAxiosError } from 'axios'
-import { StatusCodes } from 'http-status-codes'
+import { AxiosError } from 'axios'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 

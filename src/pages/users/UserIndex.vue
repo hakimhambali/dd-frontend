@@ -3,8 +3,8 @@ import useMetaPage from '@/composables/meta-page'
 import UserCreateModal from '@/pages/users/UserCreateModal.vue'
 import UserService from '@/services/UserService'
 import { useToastStore } from '@/stores/toast'
-import axios, { AxiosError } from 'axios'
-import { onMounted, ref, watch } from 'vue'
+import { AxiosError } from 'axios'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const { addToast } = useToastStore()
