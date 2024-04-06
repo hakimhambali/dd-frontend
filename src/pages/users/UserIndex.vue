@@ -29,6 +29,8 @@ interface User {
 }
 
 const users = ref<Array<User>>([])
+const userIdToBeDeleted = ref<number>()
+const userNameToBeDeleted = ref<string>()
 
 const filter = ref<{
     name: string
@@ -87,6 +89,17 @@ const deleteUser = async (id: number): Promise<void> => {
     }
 
     loading.value = false
+}
+
+const setUserToBeDeleted = (userId: number, userName: string) => {
+    userIdToBeDeleted.value = userId
+    userNameToBeDeleted.value = userName
+}
+
+const isProceed = (proceed: boolean) => {
+    if (proceed && userIdToBeDeleted.value) {
+        deleteUser(userIdToBeDeleted.value)
+    }
 }
 
 watch(
@@ -151,7 +164,7 @@ getUsers()
                                         <button class="btn btn-icon btn-primary" @click="showUser(user.id)">
                                             <BaseIcon name="eye" />
                                         </button>
-                                        <button class="btn btn-icon btn-danger" @click="deleteUser(user.id)">
+                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setUserToBeDeleted(user.id, user.name)">
                                             <BaseIcon name="trash" />
                                         </button>
                                     </div>
@@ -178,4 +191,11 @@ getUsers()
     </div>
 
     <UserCreateModal @created="getUsers" />
+    <BasePrompt
+        id="delete-user-prompt"
+        title="Are you sure you want to delete this user?"
+        :message="`You won't be able to retrieve this ${userNameToBeDeleted} anymore.`"
+        action="Delete"
+        @dismiss="isProceed"
+    />
 </template>
