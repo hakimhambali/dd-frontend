@@ -26,9 +26,7 @@ const iconClassObject = computed(() => ({
     'text-danger': props.type === 'danger'
 }))
 
-const isProceed = (proceed: boolean) => {
-    emit('dismiss', proceed)
-}
+const isProceed = (proceed: boolean) => emit('dismiss', proceed)
 </script>
 
 <template>
@@ -49,12 +47,12 @@ const isProceed = (proceed: boolean) => {
             <div class="w-100">
                 <div class="row">
                     <div class="col">
-                        <a href="#" class="btn w-100" data-bs-dismiss="modal" @click="isProceed(false)">
+                        <button class="btn w-100" data-bs-dismiss="modal" @click="isProceed(false)">
                             Cancel
-                        </a>
+                        </button>
                     </div>
                     <div class="col">
-                        <button class="btn w-100" :class="{ 'btn-success': type === 'success', 'btn-danger': type === 'danger'}" data-bs-dismiss="modal" @click="isProceed(true)">
+                        <button class="btn w-100" :class="[ type === 'success' ? 'btn-success' : 'btn-danger' ]" data-bs-dismiss="modal" @click="isProceed(true)">
                             {{ action }}
                         </button>
                     </div>

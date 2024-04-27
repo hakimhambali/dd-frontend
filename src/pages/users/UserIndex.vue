@@ -3,6 +3,7 @@ import useMetaPage from '@/composables/meta-page'
 import UserCreateModal from '@/pages/users/UserCreateModal.vue'
 import UserService from '@/services/UserService'
 import { useToastStore } from '@/stores/toast'
+import type User from '@/types/User'
 import { AxiosError } from 'axios'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -21,12 +22,6 @@ const {
     nextPage,
     gotoPage
 } = useMetaPage()
-
-interface User {
-    id: number
-    name: string
-    email: string
-}
 
 const users = ref<Array<User>>([])
 const userIdToBeDeleted = ref<number>()
@@ -147,9 +142,10 @@ getUsers()
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>No</th>
+                            <th>#</th>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
@@ -157,14 +153,15 @@ getUsers()
                         <template v-if="users.length > 0">
                             <tr class="align-middle" v-for="(user, index) in users" :key="user.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>{{ user.name }}</td>
+                                <td>{{ user.profile.full_name }}</td>
                                 <td>{{ user.email }}</td>
+                                <td>{{ user.status }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
                                         <button class="btn btn-icon btn-primary" @click="showUser(user.id)">
                                             <BaseIcon name="eye" />
                                         </button>
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setUserToBeDeleted(user.id, user.name)">
+                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setUserToBeDeleted(user.id, user.profile.full_name)">
                                             <BaseIcon name="trash" />
                                         </button>
                                     </div>
@@ -173,7 +170,7 @@ getUsers()
                         </template>
                         <template v-else>
                             <tr class="text-center">
-                                <td colspan="4">No data</td>
+                                <td colspan="5">No data</td>
                             </tr>
                         </template>
                     </tbody>
@@ -193,6 +190,7 @@ getUsers()
     <UserCreateModal @created="getUsers" />
     <BasePrompt
         id="delete-user-prompt"
+        type="success"
         title="Are you sure you want to delete this user?"
         :message="`You won't be able to retrieve this ${userNameToBeDeleted} anymore.`"
         action="Delete"
