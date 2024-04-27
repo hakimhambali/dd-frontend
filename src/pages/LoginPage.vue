@@ -105,4 +105,4 @@ const revealPassword = () => {
             </div>
         </div>
     </div>
-</template>@/stores/auth
+</template>
