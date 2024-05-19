@@ -1,30 +1,49 @@
 <script setup lang="ts">
 import UserService from '@/services/UserService'
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { useToastStore } from '@/stores/toast'
+import type User from '@/types/User'
+import { AxiosError, HttpStatusCode } from 'axios'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const { addToast } = useToastStore()
 
 const userId = computed(() => Number(route.params.userId))
-const userName = ref('')
+const user = ref<User>()
+const isFetching = ref<boolean>(false)
 
-const show = (id: number) => {
-    UserService.show(id)
-        .then(({ data: { data } }) => userName.value = data.name)
-        .catch(() => {
-            
-        })
+const show = async () => {
+    isFetching.value = true
+
+    try {
+        const response = await UserService.show(userId.value)
+        user.value = response.data.data
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            if (error.response && error.response.status === HttpStatusCode.NotFound) {
+                addToast({
+                    title: 'Not found',
+                    type: 'danger',
+                    message: 'User not found'
+                })
+            }
+        }
+    } finally {
+        isFetching.value = false
+    }
 }
 
-onMounted(() => {
-    show(userId.value)
-})
+show()
 </script>
 
 <template>
-
-    <h1>{{ userName }}</h1>
-
+    <div class="card">
+        <div class="card-body">
+            <template v-if="user">
+                <h1>Name: {{ user.profile.full_name }}</h1>
+            </template>
+        </div>
+        <SpinnerOverlay :is-showing="isFetching" />
+    </div>
 </template>
