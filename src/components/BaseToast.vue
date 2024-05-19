@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type ToastType from '@/types/ToastType'
-import { onMounted, onUnmounted, ref } from 'vue'
-import { useToastStore } from '@/stores/toast'
-import Toast from 'bootstrap/js/dist/toast'
+import { useToastStore } from '@/stores/toast';
+import type ToastType from '@/types/ToastType';
+import Toast from 'bootstrap/js/dist/toast';
+import { onMounted } from 'vue';
 
 const { removeToast } = useToastStore()
 
@@ -18,7 +18,9 @@ onMounted(() => {
         toastInstance?.show()
 
         toastElement.addEventListener('hidden.bs.toast', () => {
-            removeToast(props.toast.id as number)
+            if (props.toast.id) {
+                removeToast(props.toast.id)
+            }
         })
     }
 })
