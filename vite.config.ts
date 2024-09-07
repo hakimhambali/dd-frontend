@@ -17,5 +17,8 @@ export default ({ mode }: { mode: any }) => {
                 '@': fileURLToPath(new URL('./src', import.meta.url))
             }
         },
+        server: {
+            host: process.env.VITE_DOMAIN
+        },
     })
 }
