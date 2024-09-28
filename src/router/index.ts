@@ -1,9 +1,10 @@
 import MasterLayout from '@/layouts/MasterLayout.vue'
-import DepartmentIndex from '@/pages/departments/DepartmentIndex.vue'
 import HomePage from '@/pages/HomePage.vue'
 import UserIndex from '@/pages/users/UserIndex.vue'
-import UserShow from '@/pages/users/UserShow.vue'
-import AuthService from '@/services/AuthService'
+import GameUserIndex from '@/pages/gameusers/GameUserIndex.vue'
+import ItemIndex from '@/pages/items/ItemIndex.vue'
+import SkinIndex from '@/pages/skins/SkinIndex.vue'
+import VoucherIndex from '@/pages/vouchers/VoucherIndex.vue'
 import useIsAuthStore from '@/stores/auth'
 import {
     createRouter,
@@ -36,20 +37,36 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
-                path: '/users/:userId',
-                name: 'users-show',
-                component: UserShow,
+                path: '/gameusers',
+                name: 'gameusers-index',
+                component: GameUserIndex,
                 meta: {
-                    title: 'User Details'
+                    title: 'Game Users'
                 },
             },
             {
-                path: '/departments',
-                name: 'department-index',
-                component: DepartmentIndex,
+                path: '/items',
+                name: 'items-index',
+                component: ItemIndex,
                 meta: {
-                    title: 'Departments'
-                }
+                    title: 'Item'
+                },
+            },
+            {
+                path: '/skins',
+                name: 'skins-index',
+                component: SkinIndex,
+                meta: {
+                    title: 'Skin'
+                },
+            },
+            {
+                path: '/vouchers',
+                name: 'vouchers-index',
+                component: VoucherIndex,
+                meta: {
+                    title: 'Voucher'
+                },
             },
         ]
     },

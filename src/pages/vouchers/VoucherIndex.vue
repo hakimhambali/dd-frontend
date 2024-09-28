@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import useMetaPage from '@/composables/meta-page'
-import UserCreateModal from '@/pages/users/UserCreateModal.vue'
-import UserService from '@/services/UserService'
+import VoucherService from '@/services/VoucherService'
+import VoucherCreateModal from '@/pages/vouchers/VoucherCreateModal.vue'
 import { useToastStore } from '@/stores/toast'
-import type User from '@/types/User'
+import type Voucher from '@/types/Voucher'
 import { AxiosError } from 'axios'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -23,29 +23,25 @@ const {
     gotoPage
 } = useMetaPage()
 
-const users = ref<Array<User>>([])
-const userIdToBeDeleted = ref<number>()
-const userNameToBeDeleted = ref<string>()
+const vouchers = ref<Array<Voucher>>([])
+const voucherIdToBeDeleted = ref<number>()
+const voucherNameToBeDeleted = ref<string>()
 
 const filter = ref<{
     name: string
-    role: string
-    email: string
-    staff_no: string
-    nric_passport: string
-    phone_number: string
-    status: string
+    description: string
+    // min_price: number
+    is_percentage_flatprice: boolean
+    is_active: boolean
+    // discount_value: number
 }>({
     name: '',
-    role: '',
-    email: '',
-    staff_no: '',
-    nric_passport: '',
-    phone_number: '',
-    status: ''
+    description: '',
+    is_percentage_flatprice: true,
+    is_active: true,
 })
 
-const getUsers = async () => {
+const getVouchers = async () => {
     loading.value = true
 
     const query = {
@@ -56,12 +52,10 @@ const getUsers = async () => {
         ...filter.value
     }
 
-    console.log("Query being sent: ", query);
-
     try {
-        const response = await UserService.index(query)
-        console.log("responseUserService.index", response);
-        users.value = response.data.data
+        const response = await VoucherService.index(query)
+        console.log("responseVoucherService.index", response);
+        vouchers.value = response.data.data
         updateMetaPage(response.data.meta)
     } catch (error) {
         if (error instanceof AxiosError) {
@@ -75,20 +69,17 @@ const getUsers = async () => {
     loading.value = false
 }
 
-// const showUser = async (id: number) => {
-//     router.push({ name: 'users-show', params: { userId: id } })
-// }
-
-const deleteUser = async (id: number): Promise<void> => {
+const deleteVoucher = async (id: number): Promise<void> => {
     loading.value = true
 
     try {
-        await UserService.delete(id)
+        console.log("voucher id",id);
+        await VoucherService.delete(id)
         addToast({
             type: 'success',
-            message: 'User is successfully deleted.'
+            message: 'Voucher is successfully deleted.'
         })
-        await getUsers()
+        await getVouchers()
     } catch (error) {
         if (error instanceof AxiosError) {
             addToast({
@@ -101,23 +92,23 @@ const deleteUser = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const setUserToBeDeleted = (userId: number, userName: string) => {
-    userIdToBeDeleted.value = userId
-    userNameToBeDeleted.value = userName
+const setVoucherToBeDeleted = (voucherId: number, voucherName: string) => {
+    voucherIdToBeDeleted.value = voucherId
+    voucherNameToBeDeleted.value = voucherName
 }
 
 const isProceed = (proceed: boolean) => {
-    if (proceed && userIdToBeDeleted.value) {
-        deleteUser(userIdToBeDeleted.value)
+    if (proceed && voucherIdToBeDeleted.value) {
+        deleteVoucher(voucherIdToBeDeleted.value)
     }
 }
 
 watch(
     () => metaPageTriggered.value,
-    () => getUsers()
+    () => getVouchers()
 )
 
-getUsers()
+getVouchers()
 </script>
 
 <template>
@@ -125,9 +116,9 @@ getUsers()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVoucherModal">
                         <BaseIcon name="user-plus" />
-                        Add User
+                        Add Voucher
                     </button>
                 </div>
             </div>
@@ -138,32 +129,28 @@ getUsers()
                     <input v-model="filter.name" type="text" class="form-control" placeholder="Name">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Email
-                    <input v-model="filter.email" type="text" class="form-control" placeholder="Email">
+                    Description
+                    <input v-model="filter.description" type="text" class="form-control" placeholder="Description">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Staff No
-                    <input v-model="filter.staff_no" type="text" class="form-control" placeholder="Staff No">
+                    Percentage or Flat Price
+                    <select v-model="filter.is_percentage_flatprice" class="form-select">
+                        <option value=""></option>
+                        <option :value="true">Percentage</option>
+                        <option :value="false">Flat Price</option>
+                    </select>
                 </div>
                 <div class="col-12 col-md-auto">
-                    IC No
-                    <input v-model="filter.nric_passport" type="text" class="form-control" placeholder="IC No">
-                </div>
-                <div class="col-12 col-md-auto">
-                    Phone No
-                    <input v-model="filter.phone_number" type="text" class="form-control" placeholder="Phone No">
-                </div>
-                <div class="col-12 col-md-auto">
-                    Role
-                    <select v-model="filter.role" class="form-select">
-                        <option value="">All Users</option>
-                        <option value="Superadmin">Superadmin</option>
-                        <option value="Admin">Admin</option>
+                    Status
+                    <select v-model="filter.is_active" class="form-select">
+                        <option value="">All statuses</option>
+                        <option :value="true">Active</option>
+                        <option :value="false">Inactive</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto me-auto">
                     <br>
-                    <button class="btn btn-success" @click.prevent="getUsers">
+                    <button class="btn btn-success" @click.prevent="getVouchers">
                         <BaseIcon name="filter" />
                         Filter
                     </button>
@@ -185,28 +172,35 @@ getUsers()
                         <tr>
                             <th>#</th>
                             <th>Name</th>
-                            <th>Email</th>
-                            <th>Staff No</th>
-                            <th>IC No</th>
-                            <th>Phone Number</th>
+                            <th>Description</th>
+                            <th>Min Price</th>
+                            <th>Percentage or Flat Price</th>
+                            <th>Discount Value</th>
+                            <th>Expired after(day)</th>
+                            <th>Maximum user</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Is Active</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template v-if="users.length > 0">
-                            <tr class="align-middle" v-for="(user, index) in users" :key="user.id">
+                        <template v-if="vouchers.length > 0">
+                            <tr class="align-middle" v-for="(voucher, index) in vouchers" :key="voucher.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>{{ user.profile?.full_name }}</td>
-                                <td>{{ user.email }}</td>
-                                <td>{{ user.profile?.staff_no }}</td>
-                                <td>{{ user.profile?.nric_passport }}</td>
-                                <td>{{ user.profile?.phone_number }}</td>
+                                <td>{{ voucher.name }}</td>
+                                <td>{{ voucher.description }}</td>
+                                <td>{{ voucher.min_price }}</td>
+                                <td>{{ voucher.is_percentage_flatprice ? 'Percentage-based' : 'Flat price' }}</td>
+                                <td>{{ voucher.discount_value }}</td>
+                                <td>{{ voucher.expired_time }}</td>
+                                <td>{{ voucher.max_claim }}</td>
+                                <td>{{ voucher.start_date }}</td>
+                                <td>{{ voucher.end_date }}</td>
+                                <td>{{ voucher.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
-                                        <!-- <button class="btn btn-icon btn-primary" @click="showUser(user.id)">
-                                            <BaseIcon name="eye" />
-                                        </button> -->
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setUserToBeDeleted(user.id, user.profile.full_name)">
+                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setVoucherToBeDeleted(voucher.id, voucher.name)">
                                             <BaseIcon name="trash" />
                                         </button>
                                     </div>
@@ -215,7 +209,7 @@ getUsers()
                         </template>
                         <template v-else>
                             <tr class="text-center">
-                                <td colspan="7">No data</td>
+                                <td colspan="11">No data</td>
                             </tr>
                         </template>
                     </tbody>
@@ -232,12 +226,12 @@ getUsers()
         </div>
     </div>
 
-    <UserCreateModal @created="getUsers" />
+    <VoucherCreateModal @created="getVouchers" />
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
         title="Are you sure you want to delete this user?"
-        :message="`You won't be able to retrieve this ${userNameToBeDeleted} anymore.`"
+        :message="`You won't be able to retrieve this ${voucherNameToBeDeleted} anymore.`"
         action="Delete"
         @dismiss="isProceed"
     />

@@ -17,11 +17,35 @@ const links = computed(() => {
             active: false,
         },
         {
-            path: '/departments',
-            text: 'Departments',
-            icon: 'building',
+            path: '/gameusers',
+            text: 'Game Users',
+            icon: 'user',
             active: false,
         },
+        {
+            path: '/items',
+            text: 'Items',
+            icon: 'user',
+            active: false,
+        },
+        {
+            path: '/skins',
+            text: 'Skins',
+            icon: 'user',
+            active: false,
+        },
+        {
+            path: '/vouchers',
+            text: 'Vouchers',
+            icon: 'user',
+            active: false,
+        },
+        // {
+        //     path: '/departments',
+        //     text: 'Departments',
+        //     icon: 'building',
+        //     active: false,
+        // },
     ]
 
     // Set the 'active' property of the link that matches the current route to true
@@ -61,7 +85,7 @@ const logout = async (): Promise<void> => {
                             {{ link.text }}
                         </router-link>
                     </li>
-                    <li class="nav-item dropdown">
+                    <!-- <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
                             aria-expanded="false">Settings</a>
                         <ul class="dropdown-menu">
@@ -69,7 +93,7 @@ const logout = async (): Promise<void> => {
                             <li><a class="dropdown-item" href="#">Another action</a></li>
                             <li><a class="dropdown-item" href="#">Something else here</a></li>
                         </ul>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
             <div class="navbar-nav flex-row order-md-last">
@@ -77,7 +101,7 @@ const logout = async (): Promise<void> => {
                     <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
                         <span class="avatar avatar-sm" style="background-image: url(...)"></span>
                         <div class="d-none d-xl-block ps-2">
-                            <div>Alauddin</div>
+                            <div>John</div>
                             <div class="mt-1 small text-secondary">Full Stack Developer</div>
                         </div>
                     </a>

@@ -4,6 +4,5 @@ export default interface User {
     id: number
     email: string
     role: string
-    status: string
     profile: Profile
 }

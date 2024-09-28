@@ -2,10 +2,15 @@
 import UserService from '@/services/UserService'
 import { useToastStore } from '@/stores/toast'
 import { ref } from 'vue'
+import { RoleNameEnum } from '@/enums/RoleEnum'
 
 interface Input {
     name: string
     email: string
+    role: string
+    staff_no: string
+    nric_passport: string
+    phone_number: string
 }
 
 const emit = defineEmits(['created'])
@@ -15,20 +20,27 @@ const { addToast } = useToastStore()
 const input = ref<Input>({
     name: '',
     email: '',
+    role: RoleNameEnum.ADMIN,
+    staff_no: '',
+    nric_passport: '',
+    phone_number: '',
 })
 const isAdding = ref<boolean>(false)
 const isError = ref<boolean>(true)
+
+const roles = Object.values(RoleNameEnum)
 
 const addUser = async () => {
     isAdding.value = true
 
     try {
+        console.log("input.value", input.value);
         await UserService.store(input.value)
 
         addToast({
             type: 'success',
             title: 'Success',
-            message: `User ${input.value.name} is successfully added.`,
+            message: `User ${input.value.name} is successfully added with role ${input.value.role}.`,
         })
 
         document.getElementById('closeAddUserModalButton')?.click()
@@ -36,7 +48,11 @@ const addUser = async () => {
         emit('created')
         clearInput()
     } catch (error) {
-
+        addToast({
+            type: 'danger',
+            title: 'Error',
+            message: `Failed to add user.`,
+        })
     }
 
     isAdding.value = false
@@ -45,6 +61,7 @@ const addUser = async () => {
 const clearInput = () => {
     input.value.name = ''
     input.value.email = ''
+    input.value.role = RoleNameEnum.ADMIN
 }
 
 </script>
@@ -57,8 +74,16 @@ const clearInput = () => {
         </div>
         <div class="modal-body">
             <form action="" id="addUserForm" @submit.prevent="addUser">
-                <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name">
+                <input type="text" name="name" class="form-control mb-3" placeholder="Full Name" v-model="input.name">
                 <input type="email" name="email" class="form-control mb-3" placeholder="Email" v-model="input.email">
+                <input type="text" name="staff_no" class="form-control mb-3" placeholder="Staff No" v-model="input.staff_no">
+                <input type="text" name="nric_passport" class="form-control mb-3" placeholder="IC No" v-model="input.nric_passport">
+                <input type="text" name="phone_number" class="form-control mb-3" placeholder="Phone No" v-model="input.phone_number">
+                <select name="role" class="form-control mb-3" v-model="input.role" required>
+                    <option v-for="role in roles" :key="role" :value="role">
+                        {{ role }}
+                    </option>
+                </select>
             </form>
         </div>
         <div class="modal-footer">
