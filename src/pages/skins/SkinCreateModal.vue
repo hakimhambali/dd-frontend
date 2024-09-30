@@ -2,12 +2,13 @@
 import SkinService from '@/services/SkinService'
 import { useToastStore } from '@/stores/toast'
 import { ref } from 'vue'
+import { SkinTypeNameEnum } from '@/enums/SkinTypeEnum'
 
 interface Input {
     name: string
-    price: number
+    price: number | null
     description: string
-    skin_type: string
+    skin_type: SkinTypeNameEnum
 }
 
 const emit = defineEmits(['created'])
@@ -16,12 +17,14 @@ const { addToast } = useToastStore()
 
 const input = ref<Input>({
     name: '',
-    price: 0,
+    price: null,
     description: '',
-    skin_type: '',
+    skin_type: SkinTypeNameEnum.SHIRT,
 })
 const isAdding = ref<boolean>(false)
 const isError = ref<boolean>(true)
+
+const skinTypes = Object.values(SkinTypeNameEnum)
 
 const addSkin = async () => {
     isAdding.value = true
@@ -54,8 +57,8 @@ const addSkin = async () => {
 const clearInput = () => {
     input.value.name = ''
     input.value.description = ''
-    input.value.skin_type = ''
-    input.value.price = 0
+    input.value.skin_type = SkinTypeNameEnum.SHIRT
+    input.value.price = null
 }
 
 </script>
@@ -67,16 +70,22 @@ const clearInput = () => {
             <button type="button" id="closeAddSkinModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+
             <form action="" id="addSkinForm" @submit.prevent="addSkin">
-                Name
-                <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name">
-                Price
-                <input type="number" name="price" class="form-control mb-3" placeholder="Price" v-model="input.price">
+                Name*
+                <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
+                Price*
+                <input type="number" name="price" class="form-control mb-3" placeholder="Price" v-model="input.price" required step="0.01" min="0.01">
                 Description
                 <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
-                Skin Type
-                <input type="text" name="skin_type" class="form-control mb-3" placeholder="Skin Type" v-model="input.skin_type">
+                Skin Type*
+                <select name="skin_type" class="form-control mb-3" v-model="input.skin_type" required>
+                    <option v-for="skin_type in skinTypes" :key="skin_type" :value="skin_type">
+                        {{ skin_type }}
+                    </option>
+                </select>
             </form>
+
         </div>
         <div class="modal-footer">
             <button type="submit" class="btn btn-primary" form="addSkinForm" :disabled="isAdding">

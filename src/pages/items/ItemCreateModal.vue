@@ -2,12 +2,13 @@
 import ItemService from '@/services/ItemService'
 import { useToastStore } from '@/stores/toast'
 import { ref } from 'vue'
+import { ItemTypeNameEnum } from '@/enums/ItemTypeEnum'
 
 interface Input {
     name: string
-    price: number
+    price: number | null
     description: string
-    item_type: string
+    item_type: ItemTypeNameEnum
 }
 
 const emit = defineEmits(['created'])
@@ -16,12 +17,14 @@ const { addToast } = useToastStore()
 
 const input = ref<Input>({
     name: '',
-    price: 0,
+    price: null,
     description: '',
-    item_type: '',
+    item_type: ItemTypeNameEnum.VEHICLE,
 })
 const isAdding = ref<boolean>(false)
 const isError = ref<boolean>(true)
+
+const itemTypes = Object.values(ItemTypeNameEnum)
 
 const addItem = async () => {
     isAdding.value = true
@@ -54,8 +57,8 @@ const addItem = async () => {
 const clearInput = () => {
     input.value.name = ''
     input.value.description = ''
-    input.value.item_type = ''
-    input.value.price = 0
+    input.value.item_type = ItemTypeNameEnum.VEHICLE
+    input.value.price = null
 }
 
 </script>
@@ -68,14 +71,18 @@ const clearInput = () => {
         </div>
         <div class="modal-body">
             <form action="" id="addItemForm" @submit.prevent="addItem">
-                Name
-                <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name">
-                Price
-                <input type="number" name="price" class="form-control mb-3" placeholder="Price" v-model="input.price">
+                Name*
+                <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
+                Price*
+                <input type="number" name="price" class="form-control mb-3" placeholder="Price" v-model="input.price" required step="0.01" min="0.01">
                 Description
                 <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
-                Item Type
-                <input type="text" name="item_type" class="form-control mb-3" placeholder="Item Type" v-model="input.item_type">
+                Item Type*
+                <select name="item_type" class="form-control mb-3" v-model="input.item_type" required>
+                    <option v-for="item_type in itemTypes" :key="item_type" :value="item_type">
+                        {{ item_type }}
+                    </option>
+                </select>
             </form>
         </div>
         <div class="modal-footer">

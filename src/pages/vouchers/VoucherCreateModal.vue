@@ -47,7 +47,7 @@ const addVoucher = async () => {
             addToast({
                 type: 'success',
                 title: 'Success',
-                message: `User ${input.value.name} is successfully added.`,
+                message: `Voucher ${input.value.name} is successfully added.`,
             })
 
             document.getElementById('closeAddVoucherModalButton')?.click()

@@ -7,6 +7,7 @@ import type Voucher from '@/types/Voucher'
 import { AxiosError } from 'axios'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import dayjs from 'dayjs'
 
 const { addToast } = useToastStore()
 const router = useRouter()
@@ -103,6 +104,11 @@ const isProceed = (proceed: boolean) => {
     }
 }
 
+const formatDate = (date: string | undefined | null) => {
+    if (!date) return 'N/A';
+    return dayjs(date).format('DD MMM YYYY hh:mm A');
+}
+
 watch(
     () => metaPageTriggered.value,
     () => getVouchers()
@@ -195,8 +201,8 @@ getVouchers()
                                 <td>{{ voucher.discount_value }}</td>
                                 <td>{{ voucher.expired_time }}</td>
                                 <td>{{ voucher.max_claim }}</td>
-                                <td>{{ voucher.start_date }}</td>
-                                <td>{{ voucher.end_date }}</td>
+                                <td>{{ formatDate(voucher.start_date) }}</td>
+                                <td>{{ formatDate(voucher.end_date) }}</td>
                                 <td>{{ voucher.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">

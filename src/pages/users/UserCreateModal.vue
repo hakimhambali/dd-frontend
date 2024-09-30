@@ -7,7 +7,7 @@ import { RoleNameEnum } from '@/enums/RoleEnum'
 interface Input {
     name: string
     email: string
-    role: string
+    role: RoleNameEnum
     staff_no: string
     nric_passport: string
     phone_number: string
@@ -74,11 +74,17 @@ const clearInput = () => {
         </div>
         <div class="modal-body">
             <form action="" id="addUserForm" @submit.prevent="addUser">
-                <input type="text" name="name" class="form-control mb-3" placeholder="Full Name" v-model="input.name">
-                <input type="email" name="email" class="form-control mb-3" placeholder="Email" v-model="input.email">
-                <input type="text" name="staff_no" class="form-control mb-3" placeholder="Staff No" v-model="input.staff_no">
-                <input type="text" name="nric_passport" class="form-control mb-3" placeholder="IC No" v-model="input.nric_passport">
-                <input type="text" name="phone_number" class="form-control mb-3" placeholder="Phone No" v-model="input.phone_number">
+                Full Name*
+                <input type="text" name="name" class="form-control mb-3" placeholder="Full Name" v-model="input.name" required>
+                Email*
+                <input type="email" name="email" class="form-control mb-3" placeholder="Email" v-model="input.email" required>
+                Staff No*
+                <input type="text" name="staff_no" class="form-control mb-3" placeholder="Staff No" v-model="input.staff_no" required>
+                IC No*
+                <input type="text" name="nric_passport" class="form-control mb-3" placeholder="IC No" v-model="input.nric_passport" required>
+                Phone No*
+                <input type="text" name="phone_number" class="form-control mb-3" placeholder="Phone No" v-model="input.phone_number" required>
+                Role*
                 <select name="role" class="form-control mb-3" v-model="input.role" required>
                     <option v-for="role in roles" :key="role" :value="role">
                         {{ role }}
