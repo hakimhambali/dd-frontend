@@ -31,7 +31,7 @@ const filter = ref<{
     name: string
     // price: number
     item_type: string
-    description: string
+    description: string | null
     is_active: boolean
 }>({
     name: '',
@@ -179,7 +179,7 @@ getItems()
                             <th>Price</th>
                             <th>Item Type</th>
                             <th>Description</th>
-                            <th>Is Active</th>
+                            <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>

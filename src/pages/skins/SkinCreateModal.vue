@@ -7,7 +7,7 @@ import { SkinTypeNameEnum } from '@/enums/SkinTypeEnum'
 interface Input {
     name: string
     price: number | null
-    description: string
+    description: string | null
     skin_type: SkinTypeNameEnum
 }
 
@@ -18,7 +18,7 @@ const { addToast } = useToastStore()
 const input = ref<Input>({
     name: '',
     price: null,
-    description: '',
+    description: null,
     skin_type: SkinTypeNameEnum.SHIRT,
 })
 const isAdding = ref<boolean>(false)
@@ -56,7 +56,7 @@ const addSkin = async () => {
 
 const clearInput = () => {
     input.value.name = ''
-    input.value.description = ''
+    input.value.description = null
     input.value.skin_type = SkinTypeNameEnum.SHIRT
     input.value.price = null
 }

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import useMetaPage from '@/composables/meta-page'
-import SkinService from '@/services/SkinService'
-import SkinCreateModal from '@/pages/skins/SkinCreateModal.vue'
+import TerrainService from '@/services/TerrainService'
+import TerrainCreateModal from '@/pages/terrains/TerrainCreateModal.vue'
 import { useToastStore } from '@/stores/toast'
-import type Skin from '@/types/Skin'
+import type Terrain from '@/types/Terrain'
 import { AxiosError } from 'axios'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import dayjs from 'dayjs'
 
 const { addToast } = useToastStore()
 const router = useRouter()
@@ -23,25 +24,23 @@ const {
     gotoPage
 } = useMetaPage()
 
-const skins = ref<Array<Skin>>([])
-const skinIdToBeDeleted = ref<number>()
-const skinNameToBeDeleted = ref<string>()
+const terrains = ref<Array<Terrain>>([])
+const terrainIdToBeDeleted = ref<number>()
+const terrainNameToBeDeleted = ref<string>()
 
 const filter = ref<{
     name: string
-    // price: number
-    skin_type: string
     description: string | null
+    is_default: boolean
     is_active: boolean
 }>({
     name: '',
-    // price: '',
-    skin_type: '',
     description: '',
+    is_default: false,
     is_active: true,
 })
 
-const getSkins = async () => {
+const getTerrains = async () => {
     loading.value = true
 
     const query = {
@@ -52,12 +51,10 @@ const getSkins = async () => {
         ...filter.value
     }
 
-    console.log("Query being sent: ", query);
-
     try {
-        const response = await SkinService.index(query)
-        console.log("responseSkinService.index", response);
-        skins.value = response.data.data
+        const response = await TerrainService.index(query)
+        console.log("responseTerrainService.index", response);
+        terrains.value = response.data.data
         updateMetaPage(response.data.meta)
     } catch (error) {
         if (error instanceof AxiosError) {
@@ -71,17 +68,17 @@ const getSkins = async () => {
     loading.value = false
 }
 
-const deleteSkin = async (id: number): Promise<void> => {
+const deleteTerrain = async (id: number): Promise<void> => {
     loading.value = true
 
     try {
-        console.log("skin id",id);
-        await SkinService.delete(id)
+        console.log("terrain id",id);
+        await TerrainService.delete(id)
         addToast({
             type: 'success',
-            message: 'Skin is successfully deleted.'
+            message: 'Terrain is successfully deleted.'
         })
-        await getSkins()
+        await getTerrains()
     } catch (error) {
         if (error instanceof AxiosError) {
             addToast({
@@ -94,23 +91,28 @@ const deleteSkin = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const setSkinToBeDeleted = (skinId: number, skinName: string) => {
-    skinIdToBeDeleted.value = skinId
-    skinNameToBeDeleted.value = skinName
+const setTerrainToBeDeleted = (terrainId: number, terrainName: string) => {
+    terrainIdToBeDeleted.value = terrainId
+    terrainNameToBeDeleted.value = terrainName
 }
 
 const isProceed = (proceed: boolean) => {
-    if (proceed && skinIdToBeDeleted.value) {
-        deleteSkin(skinIdToBeDeleted.value)
+    if (proceed && terrainIdToBeDeleted.value) {
+        deleteTerrain(terrainIdToBeDeleted.value)
     }
+}
+
+const formatDate = (date: string | undefined | null) => {
+    if (!date) return 'N/A';
+    return dayjs(date).format('DD MMM YYYY hh:mm A');
 }
 
 watch(
     () => metaPageTriggered.value,
-    () => getSkins()
+    () => getTerrains()
 )
 
-getSkins()
+getTerrains()
 </script>
 
 <template>
@@ -118,9 +120,9 @@ getSkins()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSkinModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTerrainModal">
                         <BaseIcon name="user-plus" />
-                        Add Skin
+                        Add Terrain
                     </button>
                 </div>
             </div>
@@ -135,13 +137,11 @@ getSkins()
                     <input v-model="filter.description" type="text" class="form-control" placeholder="Description">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Skin Type
-                    <select v-model="filter.skin_type" class="form-select">
-                        <option value="">All skin types</option>
-                        <option value="shirt">Shirt</option>
-                        <option value="pants">Pants</option>
-                        <option value="waist">Waist</option>
-                        <option value="shoulder">Shoulder</option>
+                    Default or Not
+                    <select v-model="filter.is_default" class="form-select">
+                        <option value=""></option>
+                        <option :value="true">Default</option>
+                        <option :value="false">Not Default</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto">
@@ -154,7 +154,7 @@ getSkins()
                 </div>
                 <div class="col-12 col-md-auto me-auto">
                     <br>
-                    <button class="btn btn-success" @click.prevent="getSkins">
+                    <button class="btn btn-success" @click.prevent="getTerrains">
                         <BaseIcon name="filter" />
                         Filter
                     </button>
@@ -175,28 +175,24 @@ getSkins()
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Code</th>
                             <th>Name</th>
-                            <th>Price</th>
-                            <th>Skin Type</th>
                             <th>Description</th>
+                            <th>Is Default</th>
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template v-if="skins.length > 0">
-                            <tr class="align-middle" v-for="(skin, index) in skins" :key="skin.id">
+                        <template v-if="terrains.length > 0">
+                            <tr class="align-middle" v-for="(terrain, index) in terrains" :key="terrain.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>{{ skin.product.code }}</td>
-                                <td>{{ skin.product.name }}</td>
-                                <td>{{ skin.product.price }}</td>
-                                <td>{{ skin.skin_type }}</td>
-                                <td>{{ skin.product.description }}</td>
-                                <td>{{ skin.product.is_active ? 'Active' : 'Inactive' }}</td>
+                                <td>{{ terrain.name }}</td>
+                                <td>{{ terrain.description }}</td>
+                                <td>{{ terrain.is_default ? 'Default' : 'Not Default' }}</td>
+                                <td>{{ terrain.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setSkinToBeDeleted(skin.id, skin.product.name)">
+                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setTerrainToBeDeleted(terrain.id, terrain.name)">
                                             <BaseIcon name="trash" />
                                         </button>
                                     </div>
@@ -222,12 +218,12 @@ getSkins()
         </div>
     </div>
 
-    <SkinCreateModal @created="getSkins" />
+    <TerrainCreateModal @created="getTerrains" />
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
         title="Are you sure you want to delete this user?"
-        :message="`You won't be able to retrieve this ${skinNameToBeDeleted} anymore.`"
+        :message="`You won't be able to retrieve this ${terrainNameToBeDeleted} anymore.`"
         action="Delete"
         @dismiss="isProceed"
     />

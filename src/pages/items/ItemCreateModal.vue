@@ -7,7 +7,7 @@ import { ItemTypeNameEnum } from '@/enums/ItemTypeEnum'
 interface Input {
     name: string
     price: number | null
-    description: string
+    description: string | null
     item_type: ItemTypeNameEnum
 }
 
@@ -18,7 +18,7 @@ const { addToast } = useToastStore()
 const input = ref<Input>({
     name: '',
     price: null,
-    description: '',
+    description: null,
     item_type: ItemTypeNameEnum.VEHICLE,
 })
 const isAdding = ref<boolean>(false)
@@ -56,7 +56,7 @@ const addItem = async () => {
 
 const clearInput = () => {
     input.value.name = ''
-    input.value.description = ''
+    input.value.description = null
     input.value.item_type = ItemTypeNameEnum.VEHICLE
     input.value.price = null
 }

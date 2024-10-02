@@ -40,6 +40,12 @@ const links = computed(() => {
             icon: 'user',
             active: false,
         },
+        {
+            path: '/terrains',
+            text: 'Terrains',
+            icon: 'user',
+            active: false,
+        },
         // {
         //     path: '/departments',
         //     text: 'Departments',

@@ -5,6 +5,7 @@ import GameUserIndex from '@/pages/gameusers/GameUserIndex.vue'
 import ItemIndex from '@/pages/items/ItemIndex.vue'
 import SkinIndex from '@/pages/skins/SkinIndex.vue'
 import VoucherIndex from '@/pages/vouchers/VoucherIndex.vue'
+import TerrainIndex from '@/pages/terrains/TerrainIndex.vue'
 import useIsAuthStore from '@/stores/auth'
 import {
     createRouter,
@@ -66,6 +67,14 @@ const routes: Array<RouteRecordRaw> = [
                 component: VoucherIndex,
                 meta: {
                     title: 'Voucher'
+                },
+            },
+            {
+                path: '/terrains',
+                name: 'terrains-index',
+                component: TerrainIndex,
+                meta: {
+                    title: 'Terrain'
                 },
             },
         ]

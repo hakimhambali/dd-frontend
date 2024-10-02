@@ -30,7 +30,7 @@ const voucherNameToBeDeleted = ref<string>()
 
 const filter = ref<{
     name: string
-    description: string
+    description: string | null
     // min_price: number
     is_percentage_flatprice: boolean
     is_active: boolean
@@ -186,7 +186,7 @@ getVouchers()
                             <th>Maximum user</th>
                             <th>Start Date</th>
                             <th>End Date</th>
-                            <th>Is Active</th>
+                            <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
