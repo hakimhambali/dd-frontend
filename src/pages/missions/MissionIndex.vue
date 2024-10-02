@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import useMetaPage from '@/composables/meta-page'
-import SkinService from '@/services/SkinService'
-import SkinCreateModal from '@/pages/skins/SkinCreateModal.vue'
+import MissionService from '@/services/MissionService'
+import MissionCreateModal from '@/pages/missions/MissionCreateModal.vue'
 import { useToastStore } from '@/stores/toast'
-import type Skin from '@/types/Skin'
+import type Mission from '@/types/Mission'
 import { AxiosError } from 'axios'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import dayjs from 'dayjs'
 
 const { addToast } = useToastStore()
 const router = useRouter()
@@ -23,23 +24,27 @@ const {
     gotoPage
 } = useMetaPage()
 
-const skins = ref<Array<Skin>>([])
-const skinIdToBeDeleted = ref<number>()
-const skinNameToBeDeleted = ref<string>()
+const missions = ref<Array<Mission>>([])
+const missionIdToBeDeleted = ref<number>()
+const missionNameToBeDeleted = ref<string>()
 
 const filter = ref<{
     name: string
-    skin_type: string
     description: string | null
+    max_score: number | null
+    reward_type: string
+    reward_value: number | null
     is_active: boolean
 }>({
     name: '',
-    skin_type: '',
     description: '',
-    is_active: true,
+    max_score: null,
+    reward_type: '',
+    reward_value: null,
+    is_active: true
 })
 
-const getSkins = async () => {
+const getMissions = async () => {
     loading.value = true
 
     const query = {
@@ -50,12 +55,10 @@ const getSkins = async () => {
         ...filter.value
     }
 
-    console.log("Query being sent: ", query);
-
     try {
-        const response = await SkinService.index(query)
-        console.log("responseSkinService.index", response);
-        skins.value = response.data.data
+        const response = await MissionService.index(query)
+        console.log("responseMissionService.index", response);
+        missions.value = response.data.data
         updateMetaPage(response.data.meta)
     } catch (error) {
         if (error instanceof AxiosError) {
@@ -69,17 +72,17 @@ const getSkins = async () => {
     loading.value = false
 }
 
-const deleteSkin = async (id: number): Promise<void> => {
+const deleteMission = async (id: number): Promise<void> => {
     loading.value = true
 
     try {
-        console.log("skin id",id);
-        await SkinService.delete(id)
+        console.log("mission id",id);
+        await MissionService.delete(id)
         addToast({
             type: 'success',
-            message: 'Skin is successfully deleted.'
+            message: 'Mission is successfully deleted.'
         })
-        await getSkins()
+        await getMissions()
     } catch (error) {
         if (error instanceof AxiosError) {
             addToast({
@@ -92,23 +95,28 @@ const deleteSkin = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const setSkinToBeDeleted = (skinId: number, skinName: string) => {
-    skinIdToBeDeleted.value = skinId
-    skinNameToBeDeleted.value = skinName
+const setMissionToBeDeleted = (missionId: number, missionName: string) => {
+    missionIdToBeDeleted.value = missionId
+    missionNameToBeDeleted.value = missionName
 }
 
 const isProceed = (proceed: boolean) => {
-    if (proceed && skinIdToBeDeleted.value) {
-        deleteSkin(skinIdToBeDeleted.value)
+    if (proceed && missionIdToBeDeleted.value) {
+        deleteMission(missionIdToBeDeleted.value)
     }
+}
+
+const formatDate = (date: string | undefined | null) => {
+    if (!date) return 'N/A';
+    return dayjs(date).format('DD MMM YYYY hh:mm A');
 }
 
 watch(
     () => metaPageTriggered.value,
-    () => getSkins()
+    () => getMissions()
 )
 
-getSkins()
+getMissions()
 </script>
 
 <template>
@@ -116,9 +124,9 @@ getSkins()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSkinModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal">
                         <BaseIcon name="user-plus" />
-                        Add Skin
+                        Add Mission
                     </button>
                 </div>
             </div>
@@ -133,13 +141,11 @@ getSkins()
                     <input v-model="filter.description" type="text" class="form-control" placeholder="Description">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Skin Type
-                    <select v-model="filter.skin_type" class="form-select">
-                        <option value="">All skin types</option>
-                        <option value="shirt">Shirt</option>
-                        <option value="pants">Pants</option>
-                        <option value="waist">Waist</option>
-                        <option value="shoulder">Shoulder</option>
+                    Reward Type
+                    <select v-model="filter.reward_type" class="form-select">
+                        <option value="">All reward types</option>
+                        <option value="gold">Gold</option>
+                        <option value="gem">Gem</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto">
@@ -152,7 +158,7 @@ getSkins()
                 </div>
                 <div class="col-12 col-md-auto me-auto">
                     <br>
-                    <button class="btn btn-success" @click.prevent="getSkins">
+                    <button class="btn btn-success" @click.prevent="getMissions">
                         <BaseIcon name="filter" />
                         Filter
                     </button>
@@ -173,28 +179,28 @@ getSkins()
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Code</th>
                             <th>Name</th>
-                            <th>Price</th>
-                            <th>Skin Type</th>
                             <th>Description</th>
+                            <th>Max Score</th>
+                            <th>Reward Type</th>
+                            <th>Reward Value</th>
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template v-if="skins.length > 0">
-                            <tr class="align-middle" v-for="(skin, index) in skins" :key="skin.id">
+                        <template v-if="missions.length > 0">
+                            <tr class="align-middle" v-for="(mission, index) in missions" :key="mission.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>{{ skin.product.code }}</td>
-                                <td>{{ skin.product.name }}</td>
-                                <td>{{ skin.product.price }}</td>
-                                <td>{{ skin.skin_type }}</td>
-                                <td>{{ skin.product.description }}</td>
-                                <td>{{ skin.product.is_active ? 'Active' : 'Inactive' }}</td>
+                                <td>{{ mission.name }}</td>
+                                <td>{{ mission.description }}</td>
+                                <td>{{ mission.max_score }}</td>
+                                <td>{{ mission.reward_type }}</td>
+                                <td>{{ mission.reward_value }}</td>
+                                <td>{{ mission.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setSkinToBeDeleted(skin.id, skin.product.name)">
+                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setMissionToBeDeleted(mission.id, mission.name)">
                                             <BaseIcon name="trash" />
                                         </button>
                                     </div>
@@ -220,12 +226,12 @@ getSkins()
         </div>
     </div>
 
-    <SkinCreateModal @created="getSkins" />
+    <MissionCreateModal @created="getMissions" />
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
         title="Are you sure you want to delete this user?"
-        :message="`You won't be able to retrieve this ${skinNameToBeDeleted} anymore.`"
+        :message="`You won't be able to retrieve this ${missionNameToBeDeleted} anymore.`"
         action="Delete"
         @dismiss="isProceed"
     />

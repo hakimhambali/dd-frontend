@@ -9,6 +9,7 @@ interface Input {
     price: number | null
     description: string | null
     item_type: ItemTypeNameEnum
+    is_active: boolean
 }
 
 const emit = defineEmits(['created'])
@@ -20,6 +21,7 @@ const input = ref<Input>({
     price: null,
     description: null,
     item_type: ItemTypeNameEnum.VEHICLE,
+    is_active: true
 })
 const isAdding = ref<boolean>(false)
 const isError = ref<boolean>(true)
@@ -59,6 +61,7 @@ const clearInput = () => {
     input.value.description = null
     input.value.item_type = ItemTypeNameEnum.VEHICLE
     input.value.price = null
+    input.value.is_active = true
 }
 
 </script>
@@ -83,6 +86,12 @@ const clearInput = () => {
                         {{ item_type }}
                     </option>
                 </select>
+                <div class="form-check mb-3">
+                    <input type="checkbox" id="is_active" v-model="input.is_active" class="form-check-input">
+                    <label for="is_active" class="form-check-label">
+                        Active
+                    </label>
+                </div>
             </form>
         </div>
         <div class="modal-footer">
