@@ -52,6 +52,12 @@ const links = computed(() => {
             icon: 'user',
             active: false,
         },
+        {
+            path: '/achievements',
+            text: 'Achievements',
+            icon: 'user',
+            active: false,
+        },
         // {
         //     path: '/departments',
         //     text: 'Departments',

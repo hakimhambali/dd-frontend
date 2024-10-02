@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import MissionService from '@/services/MissionService'
+import AchievementService from '@/services/AchievementService'
 import { useToastStore } from '@/stores/toast'
 import { ref } from 'vue'
-import { RewardTypeNameEnum } from '@/enums/MissionRewardTypeEnum'
+import { RewardTypeNameEnum } from '@/enums/AchievementRewardTypeEnum'
 
 interface Input {
     name: string
@@ -30,22 +30,22 @@ const isError = ref<boolean>(true)
 
 const rewardTypes = Object.values(RewardTypeNameEnum)
 
-const addMission = async () => {
+const addAchievement = async () => {
     isAdding.value = true
 
     try {
         console.log("input.value", input.value);
 
-        const response = await MissionService.store(input.value)
+        const response = await AchievementService.store(input.value)
         
         if (response && response.status === 201) {
             addToast({
                 type: 'success',
                 title: 'Success',
-                message: `Mission ${input.value.name} is successfully added.`,
+                message: `Achievement ${input.value.name} is successfully added.`,
             })
 
-            document.getElementById('closeAddMissionModalButton')?.click()
+            document.getElementById('closeAddAchievementModalButton')?.click()
 
             emit('created')
             clearInput()
@@ -53,15 +53,15 @@ const addMission = async () => {
             addToast({
                 type: 'danger',
                 title: 'Error',
-                message: 'Failed to add mission. Please try again.',
+                message: 'Failed to add achievement. Please try again.',
             })
         }
     } catch (error) {
-        console.error("Error adding mission:", error)
+        console.error("Error adding achievement:", error)
         addToast({
             type: 'danger',
             title: 'Error',
-            message: 'Failed to add mission. An error occurred.',
+            message: 'Failed to add achievement. An error occurred.',
         })
     }
 
@@ -80,13 +80,13 @@ const clearInput = () => {
 </script>
 
 <template>
-    <BaseModal modal-id="addMissionModal">
+    <BaseModal modal-id="addAchievementModal">
         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Add New Mission</h1>
-            <button type="button" id="closeAddMissionModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Add New Achievement</h1>
+            <button type="button" id="closeAddAchievementModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <form action="" id="addMissionForm" @submit.prevent="addMission">
+            <form action="" id="addAchievementForm" @submit.prevent="addAchievement">
 
                 Name*
                 <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
@@ -117,7 +117,7 @@ const clearInput = () => {
             </form>
         </div>
         <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" form="addMissionForm" :disabled="isAdding">
+            <button type="submit" class="btn btn-primary" form="addAchievementForm" :disabled="isAdding">
                 <span v-if="!isAdding">Add</span>
                 <span v-else>
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

@@ -7,6 +7,7 @@ import SkinIndex from '@/pages/skins/SkinIndex.vue'
 import VoucherIndex from '@/pages/vouchers/VoucherIndex.vue'
 import TerrainIndex from '@/pages/terrains/TerrainIndex.vue'
 import MissionIndex from '@/pages/missions/MissionIndex.vue'
+import AchievementIndex from '@/pages/achievements/AchievementIndex.vue'
 import useIsAuthStore from '@/stores/auth'
 import {
     createRouter,
@@ -84,6 +85,14 @@ const routes: Array<RouteRecordRaw> = [
                 component: MissionIndex,
                 meta: {
                     title: 'Mission'
+                },
+            },
+            {
+                path: '/achievements',
+                name: 'achievements-index',
+                component: AchievementIndex,
+                meta: {
+                    title: 'Achievement'
                 },
             },
         ]
