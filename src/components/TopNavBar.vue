@@ -58,6 +58,18 @@ const links = computed(() => {
             icon: 'user',
             active: false,
         },
+        {
+            path: '/leaderboards',
+            text: 'Leaderboards',
+            icon: 'user',
+            active: false,
+        },
+        {
+            path: '/currencyHistories',
+            text: 'CurrencyHistories',
+            icon: 'user',
+            active: false,
+        },
         // {
         //     path: '/departments',
         //     text: 'Departments',

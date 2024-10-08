@@ -8,6 +8,8 @@ import VoucherIndex from '@/pages/vouchers/VoucherIndex.vue'
 import TerrainIndex from '@/pages/terrains/TerrainIndex.vue'
 import MissionIndex from '@/pages/missions/MissionIndex.vue'
 import AchievementIndex from '@/pages/achievements/AchievementIndex.vue'
+import LeaderboardIndex from '@/pages/leaderboards/LeaderboardIndex.vue'
+import CurrencyHistoryIndex from '@/pages/currencyHistories/CurrencyHistoryIndex.vue'
 import useIsAuthStore from '@/stores/auth'
 import {
     createRouter,
@@ -93,6 +95,22 @@ const routes: Array<RouteRecordRaw> = [
                 component: AchievementIndex,
                 meta: {
                     title: 'Achievement'
+                },
+            },
+            {
+                path: '/leaderboards',
+                name: 'leaderboards-index',
+                component: LeaderboardIndex,
+                meta: {
+                    title: 'Leaderboard'
+                },
+            },
+            {
+                path: '/currencyHistories',
+                name: 'currencyHistories-index',
+                component: CurrencyHistoryIndex,
+                meta: {
+                    title: 'Currency History'
                 },
             },
         ]

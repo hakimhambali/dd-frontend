@@ -31,12 +31,12 @@ const terrainNameToBeDeleted = ref<string>()
 const filter = ref<{
     name: string
     description: string | null
-    is_default: boolean
+    is_default: boolean | string
     is_active: boolean
 }>({
     name: '',
     description: '',
-    is_default: false,
+    is_default: '',
     is_active: true,
 })
 
@@ -139,7 +139,7 @@ getTerrains()
                 <div class="col-12 col-md-auto">
                     Default or Not
                     <select v-model="filter.is_default" class="form-select">
-                        <option value=""></option>
+                        <option value="">All terrains</option>
                         <option :value="true">Default</option>
                         <option :value="false">Not Default</option>
                     </select>
