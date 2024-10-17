@@ -101,6 +101,12 @@ const deleteUser = async (id: number): Promise<void> => {
     loading.value = false
 }
 
+const userToEdit = ref<User | undefined>(undefined)
+    const setUserToEdit = (user: User) => {
+    userToEdit.value = user
+    console.log("userToEdit.value", userToEdit.value)
+}
+
 const setUserToBeDeleted = (userId: number, userName: string) => {
     userIdToBeDeleted.value = userId
     userNameToBeDeleted.value = userName
@@ -125,7 +131,7 @@ getUsers()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal" @click="userToEdit = undefined">
                         <BaseIcon name="user-plus" />
                         Add User
                     </button>
@@ -203,9 +209,9 @@ getUsers()
                                 <td>{{ user.profile?.phone_number }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
-                                        <!-- <button class="btn btn-icon btn-primary" @click="showUser(user.id)">
-                                            <BaseIcon name="eye" />
-                                        </button> -->
+                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal" @click="setUserToEdit(user)">
+                                            <BaseIcon name="pencil" />
+                                        </button>
                                         <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setUserToBeDeleted(user.id, user.profile.full_name)">
                                             <BaseIcon name="trash" />
                                         </button>
@@ -232,7 +238,10 @@ getUsers()
         </div>
     </div>
 
-    <UserCreateModal @created="getUsers" />
+    <UserCreateModal :user="userToEdit" :mode="userToEdit ? 'update' : 'create'" 
+                    @created="getUsers" 
+                    @updated="getUsers" />
+
     <BasePrompt
         id="delete-user-prompt"
         type="danger"

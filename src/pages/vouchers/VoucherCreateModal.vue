@@ -1,101 +1,122 @@
 <script setup lang="ts">
 import VoucherService from '@/services/VoucherService'
 import { useToastStore } from '@/stores/toast'
-import { ref } from 'vue'
+import type Voucher from '@/types/Voucher';
+import { ref, watch, computed } from 'vue';
 
-interface Input {
-    name: string
-    description: string | null
-    min_price: number | null
-    is_percentage_flatprice: boolean
-    discount_value: number | null
-    expired_time: number | null
-    max_claim: number | null
-    start_date: Date | null
-    end_date: Date | null
-    is_active: boolean
-}
+const props = defineProps({
+    voucher: {
+        type: Object as () => Partial<Voucher>,
+        default: () => ({})
+    },
+    mode: {
+        type: String,
+        default: 'create'
+    }
+})
 
-const emit = defineEmits(['created'])
+const emit = defineEmits(['created', 'updated'])
 
 const { addToast } = useToastStore()
 
-const input = ref<Input>({
-    name: '',
-    description: null,
-    min_price: null,
-    is_percentage_flatprice: true,
-    discount_value: null,
-    expired_time: null,
-    max_claim: null,
-    start_date: null,
-    end_date: null,
-    is_active: true
+const input = ref({
+    name: props.voucher.name || '',
+    description: props.voucher.description || '',
+    min_price: props.voucher.min_price || null,
+    is_percentage_flatprice: props.voucher.is_percentage_flatprice || true,
+    discount_value: props.voucher.discount_value || null,
+    expired_time: props.voucher.expired_time || null,
+    max_claim: props.voucher.max_claim || null,
+    start_date: props.voucher.start_date || null,
+    end_date: props.voucher.end_date || null,
+    is_active: props.voucher.is_active || true
 })
-const isAdding = ref<boolean>(false)
-const isError = ref<boolean>(true)
 
-const addVoucher = async () => {
-    isAdding.value = true
+const isProcessing = ref<boolean>(false)
+const isUpdateMode = computed(() => props.mode === 'update');
 
+watch(
+    () => props.voucher,
+    (newVoucher) => {
+        input.value = {
+            name: newVoucher.name || '',
+            description: newVoucher.description || '',
+            min_price: newVoucher.min_price || null,
+            is_percentage_flatprice: newVoucher.is_percentage_flatprice ?? true,
+            discount_value: newVoucher.discount_value || null,
+            expired_time: newVoucher.expired_time || null,
+            max_claim: newVoucher.max_claim || null,
+            start_date: newVoucher.start_date || null,
+            end_date: newVoucher.end_date || null,
+            is_active: newVoucher.is_active ?? true
+        }
+    },
+    { immediate: true }
+)
+
+const handleSubmit = async () => {
+    isProcessing.value = true
     try {
-        console.log("input.value", input.value);
-
-        const response = await VoucherService.store(input.value)
-        
-        if (response && response.status === 201) {
+        if (isUpdateMode.value && props.voucher.id !== undefined) {
+            await VoucherService.update(props.voucher.id, input.value)
             addToast({
                 type: 'success',
-                title: 'Success',
-                message: `Voucher ${input.value.name} is successfully added.`,
+                title: 'Updated',
+                message: `Voucher ${input.value.name} is successfully updated.`,
             })
-
-            document.getElementById('closeAddVoucherModalButton')?.click()
-
-            emit('created')
-            clearInput()
+            emit('updated')
         } else {
-            addToast({
-                type: 'danger',
-                title: 'Error',
-                message: 'Failed to add voucher. Please try again.',
-            })
+            const response = await VoucherService.store(input.value)
+            if (response && response.status === 201) {
+                addToast({
+                    type: 'success',
+                    title: 'Success',
+                    message: `Voucher ${input.value.name} is successfully added.`,
+                })
+                emit('created')
+            }
         }
+
+        document.getElementById('closeAddVoucherModalButton')?.click()
+        clearInput()
+
     } catch (error) {
-        console.error("Error adding voucher:", error)
+        console.error("Error in operation:", error)
         addToast({
             type: 'danger',
             title: 'Error',
-            message: 'Failed to add voucher. An error occurred.',
+            message: 'Failed to process. An error occurred.',
         })
     }
-
-    isAdding.value = false
+    isProcessing.value = false
 }
 
 const clearInput = () => {
-    input.value.name = ''
-    input.value.description = null
-    input.value.min_price = null
-    input.value.is_percentage_flatprice = true
-    input.value.discount_value
-    input.value.expired_time = null,
-    input.value.max_claim = null,
-    input.value.start_date = null
-    input.value.end_date = null
-    input.value.is_active = true
+    input.value = {
+        name: '',
+        description: '',
+        min_price: null,
+        is_percentage_flatprice: true,
+        discount_value: null,
+        expired_time: null,
+        max_claim: null,
+        start_date: null,
+        end_date: null,
+        is_active: true
+    }
 }
+
 
 </script>
 
 <template>
     <BaseModal modal-id="addVoucherModal">
         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Add New Voucher</h1>
+            <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Voucher' : 'Add New Voucher' }}</h1>
             <button type="button" id="closeAddVoucherModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <form action="" id="addVoucherForm" @submit.prevent="addVoucher">
+            <form action="" id="voucherForm" @submit.prevent="handleSubmit">
 
                 Name*
                 <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
@@ -117,12 +138,12 @@ const clearInput = () => {
 
                 <div>
                     <label for="start_date">Start Date</label>
-                    <input type="date" name="start_date" class="form-control mb-3" placeholder="Start Date" v-model="input.start_date">
+                    <input type="datetime-local" name="start_date" class="form-control mb-3" placeholder="Start Date" v-model="input.start_date">
                 </div>
 
                 <div>
                     <label for="end_date">End Date</label>
-                    <input type="date" name="end_date" class="form-control mb-3" placeholder="End Date" v-model="input.end_date">
+                    <input type="datetime-local" name="end_date" class="form-control mb-3" placeholder="End Date" v-model="input.end_date">
                 </div>
 
                 <div class="form-check mb-3">
@@ -142,11 +163,11 @@ const clearInput = () => {
             </form>
         </div>
         <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" form="addVoucherForm" :disabled="isAdding">
-                <span v-if="!isAdding">Add</span>
+            <button type="submit" class="btn btn-primary" form="voucherForm" :disabled="isProcessing">
+                <span v-if="!isProcessing">{{ isUpdateMode ? 'Update' : 'Add' }}</span>
                 <span v-else>
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    Adding...
+                    {{ isUpdateMode ? 'Updating...' : 'Adding...' }}
                 </span>
             </button>
         </div>

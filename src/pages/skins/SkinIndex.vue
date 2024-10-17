@@ -92,6 +92,12 @@ const deleteSkin = async (id: number): Promise<void> => {
     loading.value = false
 }
 
+const skinToEdit = ref<Skin | undefined>(undefined)
+    const setSkinToEdit = (skin: Skin) => {
+    skinToEdit.value = skin
+    console.log("skinToEdit.value", skinToEdit.value)
+}
+
 const setSkinToBeDeleted = (skinId: number, skinName: string) => {
     skinIdToBeDeleted.value = skinId
     skinNameToBeDeleted.value = skinName
@@ -116,7 +122,7 @@ getSkins()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSkinModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSkinModal" @click="skinToEdit = undefined">
                         <BaseIcon name="user-plus" />
                         Add Skin
                     </button>
@@ -135,11 +141,13 @@ getSkins()
                 <div class="col-12 col-md-auto">
                     Skin Type
                     <select v-model="filter.skin_type" class="form-select">
-                        <option value="">All skin types</option>
+                        <option value="">All types</option>
                         <option value="shirt">Shirt</option>
-                        <option value="pants">Pants</option>
-                        <option value="waist">Waist</option>
                         <option value="shoulder">Shoulder</option>
+                        <option value="waist">Waist</option>
+                        <option value="pants">Pants</option>
+                        <option value="shoe">Shoe</option>
+                        <option value="outfit">Outfit</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto">
@@ -194,6 +202,9 @@ getSkins()
                                 <td>{{ skin.product.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
+                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addSkinModal" @click="setSkinToEdit(skin)">
+                                            <BaseIcon name="pencil" />
+                                        </button>
                                         <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setSkinToBeDeleted(skin.id, skin.product.name)">
                                             <BaseIcon name="trash" />
                                         </button>
@@ -219,6 +230,10 @@ getSkins()
             </div>
         </div>
     </div>
+
+    <SkinCreateModal :skin="skinToEdit" :mode="skinToEdit ? 'update' : 'create'" 
+                    @created="getSkins" 
+                    @updated="getSkins" />
 
     <SkinCreateModal @created="getSkins" />
     <BasePrompt

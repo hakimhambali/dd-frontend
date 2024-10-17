@@ -8,9 +8,9 @@ export default {
     store(data: object) {
         return http.post('admin/users', data)
     },
-    show(id: number) {
-        return http.get(`admin/users/${id}`)
-    },
+    update(id: number, data: object) {
+        return http.put(`admin/users/${id}`, data)
+    },   
     delete(id: number) {
         return http.delete(`admin/users/${id}`)
     }

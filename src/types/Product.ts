@@ -4,5 +4,6 @@ export default interface Product {
     name: string
     price: number
     description: string
-    is_active: boolean;
+    is_active: boolean
+    product_type: string
 }

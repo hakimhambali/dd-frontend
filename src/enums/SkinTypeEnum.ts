@@ -4,4 +4,5 @@ export enum SkinTypeNameEnum {
     WAIST = 'Waist',
     PANTS = 'Pants',
     SHOE = 'Shoe',
+    OUTFIT = 'Outfit',
 }

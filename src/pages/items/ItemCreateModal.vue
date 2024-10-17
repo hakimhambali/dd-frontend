@@ -1,67 +1,97 @@
 <script setup lang="ts">
 import ItemService from '@/services/ItemService'
 import { useToastStore } from '@/stores/toast'
-import { ref } from 'vue'
 import { ItemTypeNameEnum } from '@/enums/ItemTypeEnum'
+import { ref, watch, computed } from 'vue';
+import type Item from '@/types/Item';
 
-interface Input {
-    name: string
-    price: number | null
-    description: string | null
-    item_type: ItemTypeNameEnum
-    is_active: boolean
-}
+const props = defineProps({
+    item: {
+        type: Object as () => Partial<Item>,
+        default: () => ({})
+    },
+    mode: {
+        type: String,
+        default: 'create'
+    }
+})
 
-const emit = defineEmits(['created'])
+const emit = defineEmits(['created', 'updated'])
 
 const { addToast } = useToastStore()
 
-const input = ref<Input>({
-    name: '',
-    price: null,
-    description: null,
-    item_type: ItemTypeNameEnum.VEHICLE,
-    is_active: true
+const input = ref({
+    name: props.item.product?.name || '',
+    description: props.item.product?.description || '',
+    price: props.item.product?.price || null,
+    item_type: props.item.item_type || ItemTypeNameEnum.VEHICLE,
+    is_active: props.item.product?.is_active || true
 })
-const isAdding = ref<boolean>(false)
-const isError = ref<boolean>(true)
+
+const isProcessing = ref<boolean>(false)
+const isUpdateMode = computed(() => props.mode === 'update');
 
 const itemTypes = Object.values(ItemTypeNameEnum)
 
-const addItem = async () => {
-    isAdding.value = true
+watch(
+    () => props.item,
+    (newItem) => {
+        input.value = {
+            name: newItem.product?.name || '',
+            description: newItem.product?.description || '',
+            price: newItem.product?.price || null,
+            item_type: newItem.item_type || ItemTypeNameEnum.VEHICLE,
+            is_active: newItem.product?.is_active ?? true
+        }
+    },
+    { immediate: true }
+)
 
+const handleSubmit = async () => {
+    isProcessing.value = true
     try {
-        console.log("input.value", input.value);
-        await ItemService.store(input.value)
-
-        addToast({
-            type: 'success',
-            title: 'Success',
-            message: `Item ${input.value.name} is successfully added with type ${input.value.item_type}.`,
-        })
+        if (isUpdateMode.value && props.item.id !== undefined) {
+            await ItemService.update(props.item.id, input.value)
+            addToast({
+                type: 'success',
+                title: 'Updated',
+                message: `Item ${input.value.name} is successfully updated.`,
+            })
+            emit('updated')
+        } else {
+            const response = await ItemService.store(input.value)
+            if (response && response.status === 201) {
+                addToast({
+                    type: 'success',
+                    title: 'Success',
+                    message: `Item ${input.value.name} is successfully added.`,
+                })
+                emit('created')
+            }
+        }
 
         document.getElementById('closeAddItemModalButton')?.click()
-
-        emit('created')
         clearInput()
+
     } catch (error) {
+        console.error("Error in operation:", error)
         addToast({
             type: 'danger',
             title: 'Error',
-            message: `Failed to add item.`,
+            message: 'Failed to process. An error occurred.',
         })
     }
-
-    isAdding.value = false
+    isProcessing.value = false
 }
 
 const clearInput = () => {
-    input.value.name = ''
-    input.value.description = null
-    input.value.item_type = ItemTypeNameEnum.VEHICLE
-    input.value.price = null
-    input.value.is_active = true
+    input.value = {
+        name: '',
+        description: '',
+        price: null,
+        item_type: ItemTypeNameEnum.VEHICLE,
+        is_active: true
+    }
 }
 
 </script>
@@ -69,11 +99,11 @@ const clearInput = () => {
 <template>
     <BaseModal modal-id="addItemModal">
         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Add New Item</h1>
+            <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Item' : 'Add New Item' }}</h1>
             <button type="button" id="closeAddItemModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <form action="" id="addItemForm" @submit.prevent="addItem">
+            <form action="" id="itemForm" @submit.prevent="handleSubmit">
                 Name*
                 <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
                 Price*
@@ -95,11 +125,11 @@ const clearInput = () => {
             </form>
         </div>
         <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" form="addItemForm" :disabled="isAdding">
-                <span v-if="!isAdding">Add</span>
+            <button type="submit" class="btn btn-primary" form="itemForm" :disabled="isProcessing">
+                <span v-if="!isProcessing">{{ isUpdateMode ? 'Update' : 'Add' }}</span>
                 <span v-else>
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    Adding...
+                    {{ isUpdateMode ? 'Updating...' : 'Adding...' }}
                 </span>
             </button>
         </div>

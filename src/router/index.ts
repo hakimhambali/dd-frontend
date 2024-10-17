@@ -10,6 +10,7 @@ import MissionIndex from '@/pages/missions/MissionIndex.vue'
 import AchievementIndex from '@/pages/achievements/AchievementIndex.vue'
 import LeaderboardIndex from '@/pages/leaderboards/LeaderboardIndex.vue'
 import CurrencyHistoryIndex from '@/pages/currencyHistories/CurrencyHistoryIndex.vue'
+import TransactionHistoryIndex from '@/pages/transactionHistories/TransactionHistoryIndex.vue'
 import useIsAuthStore from '@/stores/auth'
 import {
     createRouter,
@@ -111,6 +112,14 @@ const routes: Array<RouteRecordRaw> = [
                 component: CurrencyHistoryIndex,
                 meta: {
                     title: 'Currency History'
+                },
+            },
+            {
+                path: '/transactionHistories',
+                name: 'transactionHistories-index',
+                component: TransactionHistoryIndex,
+                meta: {
+                    title: 'Transaction History'
                 },
             },
         ]

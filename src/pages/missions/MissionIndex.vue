@@ -95,6 +95,12 @@ const deleteMission = async (id: number): Promise<void> => {
     loading.value = false
 }
 
+const missionToEdit = ref<Mission | undefined>(undefined)
+    const setMissionToEdit = (mission: Mission) => {
+    missionToEdit.value = mission
+    console.log("missionToEdit.value", missionToEdit.value)
+}
+
 const setMissionToBeDeleted = (missionId: number, missionName: string) => {
     missionIdToBeDeleted.value = missionId
     missionNameToBeDeleted.value = missionName
@@ -124,7 +130,7 @@ getMissions()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal" @click="missionToEdit = undefined">
                         <BaseIcon name="user-plus" />
                         Add Mission
                     </button>
@@ -200,6 +206,9 @@ getMissions()
                                 <td>{{ mission.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
+                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal" @click="setMissionToEdit(mission)">
+                                            <BaseIcon name="pencil" />
+                                        </button>
                                         <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setMissionToBeDeleted(mission.id, mission.name)">
                                             <BaseIcon name="trash" />
                                         </button>
@@ -225,6 +234,10 @@ getMissions()
             </div>
         </div>
     </div>
+
+    <MissionCreateModal :mission="missionToEdit" :mode="missionToEdit ? 'update' : 'create'" 
+                    @created="getMissions" 
+                    @updated="getMissions" />
 
     <MissionCreateModal @created="getMissions" />
     <BasePrompt

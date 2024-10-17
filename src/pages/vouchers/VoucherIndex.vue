@@ -32,13 +32,13 @@ const filter = ref<{
     name: string
     description: string | null
     // min_price: number
-    is_percentage_flatprice: boolean
+    is_percentage_flatprice: boolean | string
     is_active: boolean
     // discount_value: number
 }>({
     name: '',
     description: '',
-    is_percentage_flatprice: true,
+    is_percentage_flatprice: '',
     is_active: true,
 })
 
@@ -93,6 +93,12 @@ const deleteVoucher = async (id: number): Promise<void> => {
     loading.value = false
 }
 
+const voucherToEdit = ref<Voucher | undefined>(undefined)
+    const setVoucherToEdit = (voucher: Voucher) => {
+    voucherToEdit.value = voucher
+    console.log("voucherToEdit.value", voucherToEdit.value)
+}
+
 const setVoucherToBeDeleted = (voucherId: number, voucherName: string) => {
     voucherIdToBeDeleted.value = voucherId
     voucherNameToBeDeleted.value = voucherName
@@ -122,7 +128,7 @@ getVouchers()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVoucherModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVoucherModal" @click="voucherToEdit = undefined">
                         <BaseIcon name="user-plus" />
                         Add Voucher
                     </button>
@@ -139,9 +145,9 @@ getVouchers()
                     <input v-model="filter.description" type="text" class="form-control" placeholder="Description">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Percentage or Flat Price
+                    Discount Type
                     <select v-model="filter.is_percentage_flatprice" class="form-select">
-                        <option value=""></option>
+                        <option value="">All types</option>
                         <option :value="true">Percentage</option>
                         <option :value="false">Flat Price</option>
                     </select>
@@ -180,7 +186,7 @@ getVouchers()
                             <th>Name</th>
                             <th>Description</th>
                             <th>Min Price</th>
-                            <th>Percentage or Flat Price</th>
+                            <th>Discount Type</th>
                             <th>Discount Value</th>
                             <th>Expired after(day)</th>
                             <th>Maximum user</th>
@@ -197,7 +203,7 @@ getVouchers()
                                 <td>{{ voucher.name }}</td>
                                 <td>{{ voucher.description }}</td>
                                 <td>{{ voucher.min_price }}</td>
-                                <td>{{ voucher.is_percentage_flatprice ? 'Percentage-based' : 'Flat price' }}</td>
+                                <td>{{ voucher.is_percentage_flatprice ? 'Percentage' : 'Flat price' }}</td>
                                 <td>{{ voucher.discount_value }}</td>
                                 <td>{{ voucher.expired_time }}</td>
                                 <td>{{ voucher.max_claim }}</td>
@@ -206,6 +212,9 @@ getVouchers()
                                 <td>{{ voucher.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
+                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addVoucherModal" @click="setVoucherToEdit(voucher)">
+                                            <BaseIcon name="pencil" />
+                                        </button>
                                         <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setVoucherToBeDeleted(voucher.id, voucher.name)">
                                             <BaseIcon name="trash" />
                                         </button>
@@ -231,6 +240,10 @@ getVouchers()
             </div>
         </div>
     </div>
+
+    <VoucherCreateModal :voucher="voucherToEdit" :mode="voucherToEdit ? 'update' : 'create'" 
+                    @created="getVouchers" 
+                    @updated="getVouchers" />
 
     <VoucherCreateModal @created="getVouchers" />
     <BasePrompt

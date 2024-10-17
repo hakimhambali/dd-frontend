@@ -91,6 +91,12 @@ const deleteTerrain = async (id: number): Promise<void> => {
     loading.value = false
 }
 
+const terrainToEdit = ref<Terrain | undefined>(undefined)
+    const setTerrainToEdit = (terrain: Terrain) => {
+    terrainToEdit.value = terrain
+    console.log("terrainToEdit.value", terrainToEdit.value)
+}
+
 const setTerrainToBeDeleted = (terrainId: number, terrainName: string) => {
     terrainIdToBeDeleted.value = terrainId
     terrainNameToBeDeleted.value = terrainName
@@ -120,7 +126,7 @@ getTerrains()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTerrainModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTerrainModal" @click="terrainToEdit = undefined">
                         <BaseIcon name="user-plus" />
                         Add Terrain
                     </button>
@@ -137,7 +143,7 @@ getTerrains()
                     <input v-model="filter.description" type="text" class="form-control" placeholder="Description">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Default or Not
+                    Default or Seasonal
                     <select v-model="filter.is_default" class="form-select">
                         <option value="">All terrains</option>
                         <option :value="true">Default</option>
@@ -192,6 +198,9 @@ getTerrains()
                                 <td>{{ terrain.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
+                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addTerrainModal" @click="setTerrainToEdit(terrain)">
+                                            <BaseIcon name="pencil" />
+                                        </button>
                                         <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setTerrainToBeDeleted(terrain.id, terrain.name)">
                                             <BaseIcon name="trash" />
                                         </button>
@@ -218,7 +227,10 @@ getTerrains()
         </div>
     </div>
 
-    <TerrainCreateModal @created="getTerrains" />
+    <TerrainCreateModal :terrain="terrainToEdit" :mode="terrainToEdit ? 'update' : 'create'" 
+                    @created="getTerrains" 
+                    @updated="getTerrains" />
+
     <BasePrompt
         id="delete-user-prompt"
         type="danger"

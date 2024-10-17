@@ -8,8 +8,8 @@ export default {
     store(data: object) {
         return http.post('missions', data)
     },
-    show(id: number) {
-        return http.get(`missions/${id}`)
+    update(id: number, data: object) {
+        return http.put(`missions/${id}`, data)
     },
     delete(id: number) {
         return http.delete(`missions/${id}`)

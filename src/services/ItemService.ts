@@ -8,8 +8,8 @@ export default {
     store(data: object) {
         return http.post('items', data)
     },
-    show(id: number) {
-        return http.get(`items/${id}`)
+    update(id: number, data: object) {
+        return http.put(`items/${id}`, data)
     },
     delete(id: number) {
         return http.delete(`items/${id}`)

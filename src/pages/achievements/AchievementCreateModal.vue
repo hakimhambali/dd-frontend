@@ -1,80 +1,99 @@
 <script setup lang="ts">
 import AchievementService from '@/services/AchievementService'
 import { useToastStore } from '@/stores/toast'
-import { ref } from 'vue'
 import { RewardTypeNameEnum } from '@/enums/AchievementRewardTypeEnum'
+import type Achievement from '@/types/Achievement';
+import { ref, watch, computed } from 'vue';
 
-interface Input {
-    name: string
-    description: string | null
-    max_score: number | null
-    reward_type: RewardTypeNameEnum
-    reward_value: number | null
-    is_active: boolean
-}
+const props = defineProps({
+    achievement: {
+        type: Object as () => Partial<Achievement>,
+        default: () => ({})
+    },
+    mode: {
+        type: String,
+        default: 'create'
+    }
+})
 
-const emit = defineEmits(['created'])
+const emit = defineEmits(['created', 'updated'])
 
 const { addToast } = useToastStore()
 
-const input = ref<Input>({
-    name: '',
-    description: null,
-    max_score: null,
-    reward_type: RewardTypeNameEnum.GOLD,
-    reward_value: null,
-    is_active: true
+const input = ref({
+    name: props.achievement.name || '',
+    description: props.achievement.description || '',
+    max_score: props.achievement.max_score || null,
+    reward_type: props.achievement.reward_type || RewardTypeNameEnum.GOLD,
+    reward_value: props.achievement.reward_value || null,
+    is_active: props.achievement.is_active || true
 })
-const isAdding = ref<boolean>(false)
-const isError = ref<boolean>(true)
 
+const isProcessing = ref<boolean>(false)
+const isUpdateMode = computed(() => props.mode === 'update');
 const rewardTypes = Object.values(RewardTypeNameEnum)
 
-const addAchievement = async () => {
-    isAdding.value = true
+watch(
+    () => props.achievement,
+    (newAchievement) => {
+        input.value = {
+            name: newAchievement.name || '',
+            description: newAchievement.description || '',
+            max_score: newAchievement.max_score || null,
+            reward_type: newAchievement.reward_type || RewardTypeNameEnum.GOLD,
+            reward_value: newAchievement.reward_value || null,
+            is_active: newAchievement.is_active ?? true
+        }
+    },
+    { immediate: true }
+)
 
+const handleSubmit = async () => {
+    isProcessing.value = true
     try {
-        console.log("input.value", input.value);
-
-        const response = await AchievementService.store(input.value)
-        
-        if (response && response.status === 201) {
+        if (isUpdateMode.value && props.achievement.id !== undefined) {
+            await AchievementService.update(props.achievement.id, input.value)
             addToast({
                 type: 'success',
-                title: 'Success',
-                message: `Achievement ${input.value.name} is successfully added.`,
+                title: 'Updated',
+                message: `Achievement ${input.value.name} is successfully updated.`,
             })
-
-            document.getElementById('closeAddAchievementModalButton')?.click()
-
-            emit('created')
-            clearInput()
+            emit('updated')
         } else {
-            addToast({
-                type: 'danger',
-                title: 'Error',
-                message: 'Failed to add achievement. Please try again.',
-            })
+            const response = await AchievementService.store(input.value)
+            if (response && response.status === 201) {
+                addToast({
+                    type: 'success',
+                    title: 'Success',
+                    message: `Achievement ${input.value.name} is successfully added.`,
+                })
+                emit('created')
+            }
         }
+
+        document.getElementById('closeAddAchievementModalButton')?.click()
+        clearInput()
+
     } catch (error) {
-        console.error("Error adding achievement:", error)
+        console.error("Error in operation:", error)
         addToast({
             type: 'danger',
             title: 'Error',
-            message: 'Failed to add achievement. An error occurred.',
+            message: 'Failed to process. An error occurred.',
         })
     }
-
-    isAdding.value = false
+    isProcessing.value = false
 }
 
 const clearInput = () => {
-    input.value.name = ''
-    input.value.description = null
-    input.value.max_score = null
-    input.value.reward_type = RewardTypeNameEnum.GOLD
-    input.value.reward_value = null
-    input.value.is_active = true
+    input.value = {
+        name: '',
+        description: '',
+        max_score: null,
+        reward_type: RewardTypeNameEnum.GOLD,
+        reward_value: null,
+        is_active: true
+    }
 }
 
 </script>
@@ -82,11 +101,11 @@ const clearInput = () => {
 <template>
     <BaseModal modal-id="addAchievementModal">
         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Add New Achievement</h1>
+            <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Achievement' : 'Add New Achievement' }}</h1>
             <button type="button" id="closeAddAchievementModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <form action="" id="addAchievementForm" @submit.prevent="addAchievement">
+                <form action="" id="achievementForm" @submit.prevent="handleSubmit">
 
                 Name*
                 <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
@@ -117,11 +136,11 @@ const clearInput = () => {
             </form>
         </div>
         <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" form="addAchievementForm" :disabled="isAdding">
-                <span v-if="!isAdding">Add</span>
+            <button type="submit" class="btn btn-primary" form="achievementForm" :disabled="isProcessing">
+                <span v-if="!isProcessing">{{ isUpdateMode ? 'Update' : 'Add' }}</span>
                 <span v-else>
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    Adding...
+                    {{ isUpdateMode ? 'Updating...' : 'Adding...' }}
                 </span>
             </button>
         </div>

@@ -94,6 +94,12 @@ const deleteItem = async (id: number): Promise<void> => {
     loading.value = false
 }
 
+const itemToEdit = ref<Item | undefined>(undefined)
+    const setItemToEdit = (item: Item) => {
+    itemToEdit.value = item
+    console.log("itemToEdit.value", itemToEdit.value)
+}
+
 const setItemToBeDeleted = (itemId: number, itemName: string) => {
     itemIdToBeDeleted.value = itemId
     itemNameToBeDeleted.value = itemName
@@ -118,7 +124,7 @@ getItems()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal" @click="itemToEdit = undefined">
                         <BaseIcon name="user-plus" />
                         Add Item
                     </button>
@@ -137,10 +143,11 @@ getItems()
                 <div class="col-12 col-md-auto">
                     Item Type
                     <select v-model="filter.item_type" class="form-select">
-                        <option value="">All item types</option>
+                        <option value="">All types</option>
                         <option value="vehicle">Vehicle</option>
-                        <option value="jetpack">Jetpack</option>
-                        <option value="snekaers">Snekers</option>
+                        <option value="Gold 2X Multiplier">Gold 2X Multiplier</option>
+                        <option value="Coin Magnet">Coin Magnet</option>
+                        <option value="Life">Life</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto">
@@ -195,6 +202,9 @@ getItems()
                                 <td>{{ item.product.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
+                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal" @click="setItemToEdit(item)">
+                                            <BaseIcon name="pencil" />
+                                        </button>
                                         <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setItemToBeDeleted(item.id, item.product.name)">
                                             <BaseIcon name="trash" />
                                         </button>
@@ -220,6 +230,10 @@ getItems()
             </div>
         </div>
     </div>
+
+    <ItemCreateModal :item="itemToEdit" :mode="itemToEdit ? 'update' : 'create'" 
+                    @created="getItems" 
+                    @updated="getItems" />
 
     <ItemCreateModal @created="getItems" />
     <BasePrompt

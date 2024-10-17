@@ -95,6 +95,12 @@ const deleteAchievement = async (id: number): Promise<void> => {
     loading.value = false
 }
 
+const achievementToEdit = ref<Achievement | undefined>(undefined)
+    const setAchievementToEdit = (achievement: Achievement) => {
+    achievementToEdit.value = achievement
+    console.log("achievementToEdit.value", achievementToEdit.value)
+}
+
 const setAchievementToBeDeleted = (achievementId: number, achievementName: string) => {
     achievementIdToBeDeleted.value = achievementId
     achievementNameToBeDeleted.value = achievementName
@@ -124,7 +130,7 @@ getAchievements()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAchievementModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAchievementModal" @click="achievementToEdit = undefined">
                         <BaseIcon name="user-plus" />
                         Add Achievement
                     </button>
@@ -200,6 +206,9 @@ getAchievements()
                                 <td>{{ achievement.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
+                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addAchievementModal" @click="setAchievementToEdit(achievement)">
+                                            <BaseIcon name="pencil" />
+                                        </button>
                                         <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setAchievementToBeDeleted(achievement.id, achievement.name)">
                                             <BaseIcon name="trash" />
                                         </button>
@@ -225,6 +234,10 @@ getAchievements()
             </div>
         </div>
     </div>
+
+    <AchievementCreateModal :achievement="achievementToEdit" :mode="achievementToEdit ? 'update' : 'create'" 
+                    @created="getAchievements" 
+                    @updated="getAchievements" />
 
     <AchievementCreateModal @created="getAchievements" />
     <BasePrompt

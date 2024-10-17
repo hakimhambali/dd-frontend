@@ -1,71 +1,96 @@
 <script setup lang="ts">
 import TerrainService from '@/services/TerrainService'
 import { useToastStore } from '@/stores/toast'
-import { ref } from 'vue'
+import type Terrain from '@/types/Terrain';
+import { ref, watch, computed } from 'vue';
 
-interface Input {
-    name: string
-    description: string | null
-    is_default: boolean
-    is_active: boolean
-}
+// Props for passing the terrain and mode (create or update)
+const props = defineProps({
+    terrain: {
+        type: Object as () => Partial<Terrain>,
+        default: () => ({})
+    },
+    mode: {
+        type: String,
+        default: 'create'
+    }
+})
 
-const emit = defineEmits(['created'])
+const emit = defineEmits(['created', 'updated'])
 
 const { addToast } = useToastStore()
 
-const input = ref<Input>({
-    name: '',
-    description: null,
-    is_default: false,
-    is_active: true
+// Form inputs, initialize with either empty values or passed terrain object
+const input = ref({
+    name: props.terrain.name || '',
+    description: props.terrain.description || '',
+    is_default: props.terrain.is_default || false,
+    is_active: props.terrain.is_active || true
 })
-const isAdding = ref<boolean>(false)
-const isError = ref<boolean>(true)
 
-const addTerrain = async () => {
-    isAdding.value = true
+const isProcessing = ref<boolean>(false)
 
+// Determine if the form is in 'create' or 'update' mode
+const isUpdateMode = computed(() => props.mode === 'update');
+
+// Watch the mode prop to update the form inputs when a terrain is passed for editing
+watch(
+    () => props.terrain,
+    (newTerrain) => {
+        input.value = {
+            name: newTerrain.name || '',
+            description: newTerrain.description || '',
+            is_default: newTerrain.is_default ?? false,
+            is_active: newTerrain.is_active ?? true
+        }
+    },
+    { immediate: true }
+)
+
+const handleSubmit = async () => {
+    isProcessing.value = true
     try {
-        console.log("input.value", input.value);
-
-        const response = await TerrainService.store(input.value)
-        
-        if (response && response.status === 201) {
+        if (isUpdateMode.value && props.terrain.id !== undefined) {
+            await TerrainService.update(props.terrain.id, input.value)
             addToast({
                 type: 'success',
-                title: 'Success',
-                message: `Terrain ${input.value.name} is successfully added.`,
+                title: 'Updated',
+                message: `Terrain ${input.value.name} is successfully updated.`,
             })
-
-            document.getElementById('closeAddTerrainModalButton')?.click()
-
-            emit('created')
-            clearInput()
+            emit('updated')
         } else {
-            addToast({
-                type: 'danger',
-                title: 'Error',
-                message: 'Failed to add terrain. Please try again.',
-            })
+            const response = await TerrainService.store(input.value)
+            if (response && response.status === 201) {
+                addToast({
+                    type: 'success',
+                    title: 'Success',
+                    message: `Terrain ${input.value.name} is successfully added.`,
+                })
+                emit('created')
+            }
         }
+
+        document.getElementById('closeAddTerrainModalButton')?.click()
+        clearInput()
+
     } catch (error) {
-        console.error("Error adding terrain:", error)
+        console.error("Error in operation:", error)
         addToast({
             type: 'danger',
             title: 'Error',
-            message: 'Failed to add terrain. An error occurred.',
+            message: 'Failed to process. An error occurred.',
         })
     }
-
-    isAdding.value = false
+    isProcessing.value = false
 }
 
 const clearInput = () => {
-    input.value.name = ''
-    input.value.description = null
-    input.value.is_default = false
-    input.value.is_active = true
+    input.value = {
+        name: '',
+        description: '',
+        is_default: false,
+        is_active: true
+    }
 }
 
 </script>
@@ -73,11 +98,11 @@ const clearInput = () => {
 <template>
     <BaseModal modal-id="addTerrainModal">
         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Add New Terrain</h1>
+            <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Terrain' : 'Add New Terrain' }}</h1>
             <button type="button" id="closeAddTerrainModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <form action="" id="addTerrainForm" @submit.prevent="addTerrain">
+            <form action="" id="terrainForm" @submit.prevent="handleSubmit">
 
                 Name*
                 <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
@@ -102,11 +127,11 @@ const clearInput = () => {
             </form>
         </div>
         <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" form="addTerrainForm" :disabled="isAdding">
-                <span v-if="!isAdding">Add</span>
+            <button type="submit" class="btn btn-primary" form="terrainForm" :disabled="isProcessing">
+                <span v-if="!isProcessing">{{ isUpdateMode ? 'Update' : 'Add' }}</span>
                 <span v-else>
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    Adding...
+                    {{ isUpdateMode ? 'Updating...' : 'Adding...' }}
                 </span>
             </button>
         </div>

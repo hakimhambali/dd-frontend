@@ -70,6 +70,12 @@ const links = computed(() => {
             icon: 'user',
             active: false,
         },
+        {
+            path: '/transactionHistories',
+            text: 'TransactionHistories',
+            icon: 'user',
+            active: false,
+        },
         // {
         //     path: '/departments',
         //     text: 'Departments',
