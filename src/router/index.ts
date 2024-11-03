@@ -2,6 +2,7 @@ import MasterLayout from '@/layouts/MasterLayout.vue'
 import HomePage from '@/pages/HomePage.vue'
 import UserIndex from '@/pages/users/UserIndex.vue'
 import GameUserIndex from '@/pages/gameusers/GameUserIndex.vue'
+import ProductIndex from '@/pages/products/ProductIndex.vue'
 import ItemIndex from '@/pages/items/ItemIndex.vue'
 import SkinIndex from '@/pages/skins/SkinIndex.vue'
 import VoucherIndex from '@/pages/vouchers/VoucherIndex.vue'
@@ -48,6 +49,14 @@ const routes: Array<RouteRecordRaw> = [
                 component: GameUserIndex,
                 meta: {
                     title: 'Game Users'
+                },
+            },
+            {
+                path: '/products',
+                name: 'products-index',
+                component: ProductIndex,
+                meta: {
+                    title: 'Product'
                 },
             },
             {

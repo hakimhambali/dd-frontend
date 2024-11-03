@@ -144,6 +144,14 @@ getUsers()
                     <input v-model="filter.name" type="text" class="form-control" placeholder="Name">
                 </div>
                 <div class="col-12 col-md-auto">
+                    Role
+                    <select v-model="filter.role" class="form-select">
+                        <option value="">All Users</option>
+                        <option value="superadmin">Superadmin</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-auto">
                     Email
                     <input v-model="filter.email" type="text" class="form-control" placeholder="Email">
                 </div>
@@ -158,14 +166,6 @@ getUsers()
                 <div class="col-12 col-md-auto">
                     Phone No
                     <input v-model="filter.phone_number" type="text" class="form-control" placeholder="Phone No">
-                </div>
-                <div class="col-12 col-md-auto">
-                    Role
-                    <select v-model="filter.role" class="form-select">
-                        <option value="">All Users</option>
-                        <option value="Superadmin">Superadmin</option>
-                        <option value="Admin">Admin</option>
-                    </select>
                 </div>
                 <div class="col-12 col-md-auto me-auto">
                     <br>
@@ -191,6 +191,7 @@ getUsers()
                         <tr>
                             <th>#</th>
                             <th>Name</th>
+                            <th>Role</th>
                             <th>Email</th>
                             <th>Staff No</th>
                             <th>IC No</th>
@@ -203,6 +204,7 @@ getUsers()
                             <tr class="align-middle" v-for="(user, index) in users" :key="user.id">
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ user.profile?.full_name }}</td>
+                                <td>{{ user.role }}</td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.profile?.staff_no }}</td>
                                 <td>{{ user.profile?.nric_passport }}</td>

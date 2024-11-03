@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import ItemService from '@/services/ItemService'
 import { useToastStore } from '@/stores/toast'
-import { ItemTypeNameEnum } from '@/enums/ItemTypeEnum'
 import { ref, watch, computed } from 'vue';
 import type Item from '@/types/Item';
 
@@ -21,27 +20,17 @@ const emit = defineEmits(['created', 'updated'])
 const { addToast } = useToastStore()
 
 const input = ref({
-    name: props.item.product?.name || '',
-    description: props.item.product?.description || '',
-    price: props.item.product?.price || null,
-    item_type: props.item.item_type || ItemTypeNameEnum.VEHICLE,
-    is_active: props.item.product?.is_active || true
+    item_type: props.item.item_type || '',
 })
 
 const isProcessing = ref<boolean>(false)
 const isUpdateMode = computed(() => props.mode === 'update');
 
-const itemTypes = Object.values(ItemTypeNameEnum)
-
 watch(
     () => props.item,
     (newItem) => {
         input.value = {
-            name: newItem.product?.name || '',
-            description: newItem.product?.description || '',
-            price: newItem.product?.price || null,
-            item_type: newItem.item_type || ItemTypeNameEnum.VEHICLE,
-            is_active: newItem.product?.is_active ?? true
+            item_type: newItem.item_type || '',
         }
     },
     { immediate: true }
@@ -55,7 +44,7 @@ const handleSubmit = async () => {
             addToast({
                 type: 'success',
                 title: 'Updated',
-                message: `Item ${input.value.name} is successfully updated.`,
+                message: `Item ${input.value.item_type} is successfully updated.`,
             })
             emit('updated')
         } else {
@@ -64,7 +53,7 @@ const handleSubmit = async () => {
                 addToast({
                     type: 'success',
                     title: 'Success',
-                    message: `Item ${input.value.name} is successfully added.`,
+                    message: `Item ${input.value.item_type} is successfully added.`,
                 })
                 emit('created')
             }
@@ -78,7 +67,7 @@ const handleSubmit = async () => {
         addToast({
             type: 'danger',
             title: 'Error',
-            message: 'Failed to process. An error occurred.',
+            message: `Failed to process. ${error.response.data.message}`,
         })
     }
     isProcessing.value = false
@@ -86,11 +75,7 @@ const handleSubmit = async () => {
 
 const clearInput = () => {
     input.value = {
-        name: '',
-        description: '',
-        price: null,
-        item_type: ItemTypeNameEnum.VEHICLE,
-        is_active: true
+        item_type: '',
     }
 }
 
@@ -104,24 +89,8 @@ const clearInput = () => {
         </div>
         <div class="modal-body">
             <form action="" id="itemForm" @submit.prevent="handleSubmit">
-                Name*
-                <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
-                Price*
-                <input type="number" name="price" class="form-control mb-3" placeholder="Price" v-model="input.price" required step="0.01" min="0.01">
-                Description
-                <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
                 Item Type*
-                <select name="item_type" class="form-control mb-3" v-model="input.item_type" required>
-                    <option v-for="item_type in itemTypes" :key="item_type" :value="item_type">
-                        {{ item_type }}
-                    </option>
-                </select>
-                <div class="form-check mb-3">
-                    <input type="checkbox" id="is_active" v-model="input.is_active" class="form-check-input">
-                    <label for="is_active" class="form-check-label">
-                        Active
-                    </label>
-                </div>
+                <input type="text" name="item_type" class="form-control mb-3" placeholder="Item Type" v-model="input.item_type" required>
             </form>
         </div>
         <div class="modal-footer">

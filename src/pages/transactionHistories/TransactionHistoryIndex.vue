@@ -103,40 +103,21 @@ getTransactionHistories()
                     <input v-model="filter.product_code" type="text" class="form-control" placeholder="Product Code">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Product Name
-                    <input v-model="filter.product_name" type="text" class="form-control" placeholder="Product Name">
-                </div>
-                <div class="col-12 col-md-auto">
-                    Product Type
-                    <input v-model="filter.product_type" type="text" class="form-control" placeholder="Product Type">
-                </div>
-                <div class="col-12 col-md-auto">
                     Voucher Used Name
                     <input v-model="filter.voucher_used_name" type="text" class="form-control" placeholder="Voucher Used Name">
-                </div>
-                <div class="col-12 col-md-auto">
-                    Voucher Used Discount Type
-                    <select v-model="filter.voucher_used_is_percentage_flatprice" class="form-select">
-                        <option value="">All types</option>
-                        <option :value="true">Percentage</option>
-                        <option :value="false">Flat Price</option>
-                    </select>
                 </div>
                 <div class="col-12 col-md-auto">
                     Voucher Earned Name
                     <input v-model="filter.voucher_earned_name" type="text" class="form-control" placeholder="Voucher Earned Name">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Voucher Earned Discount Type
-                    <select v-model="filter.voucher_earned_is_percentage_flatprice" class="form-select">
-                        <option value="">All types</option>
-                        <option :value="true">Percentage</option>
-                        <option :value="false">Flat Price</option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-auto">
                     Platform
-                    <input v-model="filter.platform" type="text" class="form-control" placeholder="Platform">
+                    <select v-model="filter.platform" class="form-select">
+                        <option value="">All platforms</option>
+                        <option value="Ios">Ios</option>
+                        <option value="Android">Android</option>
+                        <option value="Huawei">Huawei</option>
+                    </select>
                 </div>
                 <div class="col-12 col-md-auto me-auto">
                     <br>
@@ -163,17 +144,11 @@ getTransactionHistories()
                             <th>#</th>
                             <th>Username</th>
                             <th>Product Code</th>
-                            <th>Product Name</th>
-                            <th>Product Price</th>
-                            <th>Product Type</th>
-                            <th>Total Amount</th>
+                            <th>Total Real Price</th>
+                            <th>Total Game Price</th>
                             <th>Transaction Date</th>
                             <th>Voucher Used Name</th>
-                            <th>Voucher Used Type</th>
-                            <th>Voucher Used Discount</th>
                             <th>Voucher Earned Name</th>
-                            <th>Voucher Earned Type</th>
-                            <th>Voucher Earned Discount</th>
                             <th>Platform</th>
                         </tr>
                     </thead>
@@ -183,17 +158,16 @@ getTransactionHistories()
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ transactionHistory.game_user.username }}</td>
                                 <td>{{ transactionHistory.product.code }}</td>
-                                <td>{{ transactionHistory.product.name }}</td>
-                                <td>{{ transactionHistory.product.price }}</td>
-                                <td>{{ transactionHistory.product.product_type }}</td>
-                                <td>{{ transactionHistory.buy_price }}</td>
+                                <td>
+                                    <span v-if="transactionHistory.paid_real_price">RM {{ transactionHistory.paid_real_price }}</span>
+                                    <span v-else>N/A</span>
+                                </td>
+                                <td>
+                                    {{ (transactionHistory.paid_game_price != null || transactionHistory.game_price_type != null) ? transactionHistory.paid_game_price + ' ' + transactionHistory.game_price_type : 'N/A' }}
+                                </td>
                                 <td>{{ formatDate(transactionHistory.transaction_date) }}</td>
                                 <td>{{ transactionHistory.voucher_used?.name || 'N/A' }}</td>
-                                <td>{{ transactionHistory.voucher_used ? (transactionHistory.voucher_used.is_percentage_flatprice ? 'Percentage' : 'Flat Price') : 'N/A' }}</td>
-                                <td>{{ transactionHistory.voucher_used?.discount_value || 'N/A' }}</td>
                                 <td>{{ transactionHistory.voucher_earned.name }}</td>
-                                <td>{{ transactionHistory.voucher_earned.is_percentage_flatprice ? 'Percentage' : 'Flat price' }}</td>
-                                <td>{{ transactionHistory.voucher_earned.discount_value }}</td>
                                 <td>{{ transactionHistory.platform }}</td>
                             </tr>
                         </template>

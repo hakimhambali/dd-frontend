@@ -28,17 +28,9 @@ const itemIdToBeDeleted = ref<number>()
 const itemNameToBeDeleted = ref<string>()
 
 const filter = ref<{
-    name: string
-    // price: number
     item_type: string
-    description: string | null
-    is_active: boolean
 }>({
-    name: '',
-    // price: '',
     item_type: '',
-    description: '',
-    is_active: true,
 })
 
 const getItems = async () => {
@@ -133,30 +125,8 @@ getItems()
 
             <div class="row mb-3">
                 <div class="col-12 col-md-auto">
-                    Name
-                    <input v-model="filter.name" type="text" class="form-control" placeholder="Name">
-                </div>
-                <div class="col-12 col-md-auto">
-                    Description
-                    <input v-model="filter.description" type="text" class="form-control" placeholder="Description">
-                </div>
-                <div class="col-12 col-md-auto">
                     Item Type
-                    <select v-model="filter.item_type" class="form-select">
-                        <option value="">All types</option>
-                        <option value="vehicle">Vehicle</option>
-                        <option value="Gold 2X Multiplier">Gold 2X Multiplier</option>
-                        <option value="Coin Magnet">Coin Magnet</option>
-                        <option value="Life">Life</option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-auto">
-                    Status
-                    <select v-model="filter.is_active" class="form-select">
-                        <option value="">All statuses</option>
-                        <option :value="true">Active</option>
-                        <option :value="false">Inactive</option>
-                    </select>
+                    <input v-model="filter.item_type" type="text" class="form-control" placeholder="Item Type">
                 </div>
                 <div class="col-12 col-md-auto me-auto">
                     <br>
@@ -181,12 +151,7 @@ getItems()
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Price</th>
                             <th>Item Type</th>
-                            <th>Description</th>
-                            <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
@@ -194,18 +159,13 @@ getItems()
                         <template v-if="items.length > 0">
                             <tr class="align-middle" v-for="(item, index) in items" :key="item.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>{{ item.product.code }}</td>
-                                <td>{{ item.product.name }}</td>
-                                <td>{{ item.product.price }}</td>
                                 <td>{{ item.item_type }}</td>
-                                <td>{{ item.product.description }}</td>
-                                <td>{{ item.product.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
                                         <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal" @click="setItemToEdit(item)">
                                             <BaseIcon name="pencil" />
                                         </button>
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setItemToBeDeleted(item.id, item.product.name)">
+                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setItemToBeDeleted(item.id, item.item_type)">
                                             <BaseIcon name="trash" />
                                         </button>
                                     </div>
@@ -235,7 +195,6 @@ getItems()
                     @created="getItems" 
                     @updated="getItems" />
 
-    <ItemCreateModal @created="getItems" />
     <BasePrompt
         id="delete-user-prompt"
         type="danger"

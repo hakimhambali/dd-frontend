@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import useMetaPage from '@/composables/meta-page'
-import SkinService from '@/services/SkinService'
-import SkinCreateModal from '@/pages/skins/SkinCreateModal.vue'
+import ProductService from '@/services/ProductService'
+import ProductCreateModal from '@/pages/products/ProductCreateModal.vue'
 import { useToastStore } from '@/stores/toast'
-import type Skin from '@/types/Skin'
+import type Product from '@/types/Product'
 import { AxiosError } from 'axios'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -23,25 +23,25 @@ const {
     gotoPage
 } = useMetaPage()
 
-const skins = ref<Array<Skin>>([])
-const skinIdToBeDeleted = ref<number>()
-const skinNameToBeDeleted = ref<string>()
+const products = ref<Array<Product>>([])
+const productIdToBeDeleted = ref<number>()
+const productNameToBeDeleted = ref<string>()
 
 const filter = ref<{
     code: string
     name: string
-    skin_type: string
+    product_type: string
     description: string | null
     is_active: boolean
 }>({
     code: '',
     name: '',
-    skin_type: '',
+    product_type: '',
     description: '',
     is_active: true,
 })
 
-const getSkins = async () => {
+const getProducts = async () => {
     loading.value = true
 
     const query = {
@@ -55,9 +55,9 @@ const getSkins = async () => {
     console.log("Query being sent: ", query);
 
     try {
-        const response = await SkinService.index(query)
-        console.log("responseSkinService.index", response);
-        skins.value = response.data.data
+        const response = await ProductService.index(query)
+        console.log("responseProductService.index", response);
+        products.value = response.data.data
         updateMetaPage(response.data.meta)
     } catch (error) {
         if (error instanceof AxiosError) {
@@ -71,17 +71,17 @@ const getSkins = async () => {
     loading.value = false
 }
 
-const deleteSkin = async (id: number): Promise<void> => {
+const deleteProduct = async (id: number): Promise<void> => {
     loading.value = true
 
     try {
-        console.log("skin id",id);
-        await SkinService.delete(id)
+        console.log("product id",id);
+        await ProductService.delete(id)
         addToast({
             type: 'success',
-            message: 'Skin is successfully deleted.'
+            message: 'Product is successfully deleted.'
         })
-        await getSkins()
+        await getProducts()
     } catch (error) {
         if (error instanceof AxiosError) {
             addToast({
@@ -94,29 +94,29 @@ const deleteSkin = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const skinToEdit = ref<Skin | undefined>(undefined)
-    const setSkinToEdit = (skin: Skin) => {
-    skinToEdit.value = skin
-    console.log("skinToEdit.value", skinToEdit.value)
+const productToEdit = ref<Product | undefined>(undefined)
+    const setProductToEdit = (product: Product) => {
+    productToEdit.value = product
+    console.log("productToEdit.value", productToEdit.value)
 }
 
-const setSkinToBeDeleted = (skinId: number, skinName: string) => {
-    skinIdToBeDeleted.value = skinId
-    skinNameToBeDeleted.value = skinName
+const setProductToBeDeleted = (productId: number, productName: string) => {
+    productIdToBeDeleted.value = productId
+    productNameToBeDeleted.value = productName
 }
 
 const isProceed = (proceed: boolean) => {
-    if (proceed && skinIdToBeDeleted.value) {
-        deleteSkin(skinIdToBeDeleted.value)
+    if (proceed && productIdToBeDeleted.value) {
+        deleteProduct(productIdToBeDeleted.value)
     }
 }
 
 watch(
     () => metaPageTriggered.value,
-    () => getSkins()
+    () => getProducts()
 )
 
-getSkins()
+getProducts()
 </script>
 
 <template>
@@ -124,9 +124,9 @@ getSkins()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSkinModal" @click="skinToEdit = undefined">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal" @click="productToEdit = undefined">
                         <BaseIcon name="user-plus" />
-                        Add Skin
+                        Add Product
                     </button>
                 </div>
             </div>
@@ -141,11 +141,11 @@ getSkins()
                     <input v-model="filter.name" type="text" class="form-control" placeholder="Name">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Skin Type
-                    <select v-model="filter.skin_type" class="form-select">
+                    Product Type
+                    <select v-model="filter.product_type" class="form-select">
                         <option value="">All types</option>
-                        <option value="skateboard">Skateboard</option>
-                        <option value="outfit">Outfit</option>
+                        <option value="Item">Item Consumable</option>
+                        <option value="Skin">Skin</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto">
@@ -162,7 +162,7 @@ getSkins()
                 </div>
                 <div class="col-12 col-md-auto me-auto">
                     <br>
-                    <button class="btn btn-success" @click.prevent="getSkins">
+                    <button class="btn btn-success" @click.prevent="getProducts">
                         <BaseIcon name="filter" />
                         Filter
                     </button>
@@ -187,34 +187,49 @@ getSkins()
                             <th>Name</th>
                             <th>Real Price</th>
                             <th>Game Price</th>
-                            <th>Skin Type</th>
+                            <th>Product Type</th>
+                            <th>Detail Type</th>
                             <th>Description</th>
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template v-if="skins.length > 0">
-                            <tr class="align-middle" v-for="(skin, index) in skins" :key="skin.id">
+                        <template v-if="products.length > 0">
+                            <tr class="align-middle" v-for="(product, index) in products" :key="product.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>{{ skin.product.code }}</td>
-                                <td>{{ skin.product.name }}</td>
-                                <td>RM {{ skin.product.price_real }}</td>
+                                <td>{{ product.code }}</td>
+                                <td>{{ product.name }}</td>
+                                <td>RM {{ product.price_real }}</td>
                                 <td>
-                                    {{ (skin.product.price_game != null || skin.product.price_game_type != null) ? skin.product.price_game + ' ' + skin.product.price_game_type : 'N/A' }}
+                                    {{ (product.price_game != null || product.price_game_type != null) ? product.price_game + ' ' + product.price_game_type : 'N/A' }}
                                 </td>
-                                <td>{{ skin.skin_type }}</td>
-                                <td>{{ skin.product.description }}</td>
-                                <td>{{ skin.product.is_active ? 'Active' : 'Inactive' }}</td>
+                                <td>{{ product.product_type }}</td>
+                                <td>
+                                    <template v-if="product.skin">
+                                        {{ product.skin.skin_type }}
+                                    </template>
+                                    <template v-else>
+                                        <ul v-if="product.items.length > 0">
+                                            <li v-for="item in product.items" :key="item.id">{{ item.item_type }} - {{ item.count }}</li>
+                                        </ul>
+                                        <p v-else>No items available</p>
+                                    </template>
+                                </td>
+                                <td>{{ product.description || 'N/A' }}</td>
+                                <td>{{ product.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
-                                    <div class="btn-group">
-                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addSkinModal" @click="setSkinToEdit(skin)">
-                                            <BaseIcon name="pencil" />
-                                        </button>
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setSkinToBeDeleted(skin.id, skin.product.name)">
-                                            <BaseIcon name="trash" />
-                                        </button>
-                                    </div>
+                                    <template v-if="product.skin"></template>
+                                    <template v-else>
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal" @click="setProductToEdit(product)">
+                                                <BaseIcon name="pencil" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setProductToBeDeleted(product.id, product.name)">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
                                 </td>
                             </tr>
                         </template>
@@ -237,15 +252,15 @@ getSkins()
         </div>
     </div>
 
-    <SkinCreateModal :skin="skinToEdit" :mode="skinToEdit ? 'update' : 'create'" 
-                    @created="getSkins" 
-                    @updated="getSkins" />
-
+    <ProductCreateModal :product="productToEdit" :mode="productToEdit ? 'update' : 'create'" 
+                    @created="getProducts" 
+                    @updated="getProducts" />
+                    
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
         title="Are you sure you want to delete this user?"
-        :message="`You won't be able to retrieve this ${skinNameToBeDeleted} anymore.`"
+        :message="`You won't be able to retrieve this ${productNameToBeDeleted} anymore.`"
         action="Delete"
         @dismiss="isProceed"
     />

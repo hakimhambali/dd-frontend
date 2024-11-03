@@ -23,6 +23,12 @@ const links = computed(() => {
             active: false,
         },
         {
+            path: '/products',
+            text: 'Products',
+            icon: 'user',
+            active: false,
+        },
+        {
             path: '/items',
             text: 'Items',
             icon: 'user',
@@ -55,12 +61,6 @@ const links = computed(() => {
         {
             path: '/achievements',
             text: 'Achievements',
-            icon: 'user',
-            active: false,
-        },
-        {
-            path: '/leaderboards',
-            text: 'Leaderboards',
             icon: 'user',
             active: false,
         },

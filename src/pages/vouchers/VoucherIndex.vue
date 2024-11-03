@@ -186,9 +186,8 @@ getVouchers()
                             <th>Name</th>
                             <th>Description</th>
                             <th>Min Price</th>
-                            <th>Discount Type</th>
                             <th>Discount Value</th>
-                            <th>Expired after(day)</th>
+                            <th>Expired after Claimed (day)</th>
                             <th>Maximum user</th>
                             <th>Start Date</th>
                             <th>End Date</th>
@@ -201,12 +200,11 @@ getVouchers()
                             <tr class="align-middle" v-for="(voucher, index) in vouchers" :key="voucher.id">
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ voucher.name }}</td>
-                                <td>{{ voucher.description }}</td>
-                                <td>{{ voucher.min_price }}</td>
-                                <td>{{ voucher.is_percentage_flatprice ? 'Percentage' : 'Flat price' }}</td>
-                                <td>{{ voucher.discount_value }}</td>
-                                <td>{{ voucher.expired_time }}</td>
-                                <td>{{ voucher.max_claim }}</td>
+                                <td>{{ voucher.description || 'N/A' }}</td>
+                                <td>{{ voucher.min_price || 'No min price' }}</td>
+                                <td>{{ voucher.is_percentage_flatprice ? '' : 'RM' }} {{ voucher.discount_value }} {{ voucher.is_percentage_flatprice ? '%' : '' }}</td>
+                                <td>{{ voucher.expired_time || 'No expired time' }}</td>
+                                <td>{{ voucher.max_claim || 'No max user' }}</td>
                                 <td>{{ formatDate(voucher.start_date) }}</td>
                                 <td>{{ formatDate(voucher.end_date) }}</td>
                                 <td>{{ voucher.is_active ? 'Active' : 'Inactive' }}</td>
@@ -245,7 +243,6 @@ getVouchers()
                     @created="getVouchers" 
                     @updated="getVouchers" />
 
-    <VoucherCreateModal @created="getVouchers" />
     <BasePrompt
         id="delete-user-prompt"
         type="danger"

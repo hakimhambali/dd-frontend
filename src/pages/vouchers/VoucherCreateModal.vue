@@ -23,7 +23,7 @@ const input = ref({
     name: props.voucher.name || '',
     description: props.voucher.description || '',
     min_price: props.voucher.min_price || null,
-    is_percentage_flatprice: props.voucher.is_percentage_flatprice || true,
+    is_percentage_flatprice: props.voucher.is_percentage_flatprice || false,
     discount_value: props.voucher.discount_value || null,
     expired_time: props.voucher.expired_time || null,
     max_claim: props.voucher.max_claim || null,
@@ -42,7 +42,7 @@ watch(
             name: newVoucher.name || '',
             description: newVoucher.description || '',
             min_price: newVoucher.min_price || null,
-            is_percentage_flatprice: newVoucher.is_percentage_flatprice ?? true,
+            is_percentage_flatprice: newVoucher.is_percentage_flatprice ?? false,
             discount_value: newVoucher.discount_value || null,
             expired_time: newVoucher.expired_time || null,
             max_claim: newVoucher.max_claim || null,
@@ -53,6 +53,24 @@ watch(
     },
     { immediate: true }
 )
+
+watch(
+    () => input.value.discount_value,
+    (newValue) => {
+        const isPercentageChecked = input.value.is_percentage_flatprice;
+        if (isPercentageChecked && newValue !== null) {
+            const regex = /^\d{0,2}(\.\d{0,2})?$/;
+            if (!regex.test(newValue.toString())) {
+                addToast({
+                    type: 'warning',
+                    title: 'Invalid Format',
+                    message: 'If you chose Percentage-based discount, please enter a discount value with format like "29.99".',
+                });
+                input.value.discount_value = null;
+            }
+        }
+    }
+);
 
 const handleSubmit = async () => {
     isProcessing.value = true
@@ -85,7 +103,7 @@ const handleSubmit = async () => {
         addToast({
             type: 'danger',
             title: 'Error',
-            message: 'Failed to process. An error occurred.',
+            message: `Failed to process. ${error.response.data.message}`,
         })
     }
     isProcessing.value = false
@@ -96,7 +114,7 @@ const clearInput = () => {
         name: '',
         description: '',
         min_price: null,
-        is_percentage_flatprice: true,
+        is_percentage_flatprice: false,
         discount_value: null,
         expired_time: null,
         max_claim: null,

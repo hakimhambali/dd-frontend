@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import AchievementService from '@/services/AchievementService'
+import ProductService from '@/services/ProductService'
 import { useToastStore } from '@/stores/toast'
-import { RewardTypeNameEnum } from '@/enums/AchievementRewardTypeEnum'
+import { GameCurrencyNameEnum } from '@/enums/GameCurrencyEnum'
 import type Achievement from '@/types/Achievement';
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 
 const props = defineProps({
     achievement: {
@@ -24,14 +25,28 @@ const input = ref({
     name: props.achievement.name || '',
     description: props.achievement.description || '',
     max_score: props.achievement.max_score || null,
-    reward_type: props.achievement.reward_type || RewardTypeNameEnum.GOLD,
+    reward_type: props.achievement.reward_type || '',
     reward_value: props.achievement.reward_value || null,
-    is_active: props.achievement.is_active || true
+    is_active: props.achievement.is_active || true,
+    product_rewarded_id: props.achievement.product_rewarded_id || null,
 })
 
 const isProcessing = ref<boolean>(false)
 const isUpdateMode = computed(() => props.mode === 'update');
-const rewardTypes = Object.values(RewardTypeNameEnum)
+const rewardTypes = Object.values(GameCurrencyNameEnum)
+
+const products = ref<{ id: number; code:string }[]>([]);
+
+const fetchProducts = async () => {
+    try {
+        const response = await ProductService.getProducts()
+        products.value = response.data;
+    } catch (error) {
+        console.error('Error fetching items:', error);
+    }
+}
+
+onMounted(fetchProducts);
 
 watch(
     () => props.achievement,
@@ -40,7 +55,7 @@ watch(
             name: newAchievement.name || '',
             description: newAchievement.description || '',
             max_score: newAchievement.max_score || null,
-            reward_type: newAchievement.reward_type || RewardTypeNameEnum.GOLD,
+            reward_type: newAchievement.reward_type || '',
             reward_value: newAchievement.reward_value || null,
             is_active: newAchievement.is_active ?? true
         }
@@ -48,7 +63,33 @@ watch(
     { immediate: true }
 )
 
+watch(
+    () => input.value.reward_value,
+    (newRewardValue) => {
+        const gameRewardInput = document.getElementById('reward_type') as HTMLSelectElement;
+        if (newRewardValue) {
+            gameRewardInput.setAttribute('required', 'true');
+        } else {
+            gameRewardInput.removeAttribute('required');
+        }
+    }
+)
+
+const isRewardValid = computed(() => {
+    return input.value.product_rewarded_id || (input.value.reward_type && input.value.reward_value);
+})
+
 const handleSubmit = async () => {
+
+    if (!isRewardValid.value) {
+        addToast({
+            type: 'warning',
+            title: 'Validation Error',
+            message: 'Please fill either Reward Product or both Reward Game Type and Reward Game Value.',
+        })
+        return;
+    }
+
     isProcessing.value = true
     try {
         if (isUpdateMode.value && props.achievement.id !== undefined) {
@@ -79,7 +120,7 @@ const handleSubmit = async () => {
         addToast({
             type: 'danger',
             title: 'Error',
-            message: 'Failed to process. An error occurred.',
+            message: `Failed to process. ${error.response.data.message}`,
         })
     }
     isProcessing.value = false
@@ -90,9 +131,10 @@ const clearInput = () => {
         name: '',
         description: '',
         max_score: null,
-        reward_type: RewardTypeNameEnum.GOLD,
+        reward_type: '',
         reward_value: null,
-        is_active: true
+        is_active: true,
+        product_rewarded_id: null,
     }
 }
 
@@ -105,7 +147,7 @@ const clearInput = () => {
             <button type="button" id="closeAddAchievementModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-                <form action="" id="achievementForm" @submit.prevent="handleSubmit">
+            <form action="" id="achievementForm" @submit.prevent="handleSubmit">
 
                 Name*
                 <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
@@ -116,15 +158,24 @@ const clearInput = () => {
                 Maximum Score*
                 <input type="number" name="max_score" class="form-control mb-3" placeholder="Maximum Score" v-model="input.max_score" required step="0.01" min="0.01">
 
-                Reward Type*
-                <select name="reward_type" class="form-control mb-3" v-model="input.reward_type" required>
+                Reward Game Type
+                <select name="reward_type" class="form-select mb-3" v-model="input.reward_type" id="reward_type">
+                    <option value="">Select Reward Game Type</option>
                     <option v-for="reward_type in rewardTypes" :key="reward_type" :value="reward_type">
                         {{ reward_type }}
                     </option>
                 </select>
 
-                Reward Value*
-                <input type="number" name="reward_value" class="form-control mb-3" placeholder="Reward Value" v-model="input.reward_value" required step="0.01" min="0.01">
+                Reward Game Value
+                <input type="number" name="reward_value" class="form-control mb-3" placeholder="Reward Game Value" v-model="input.reward_value" min="1">
+
+                Reward Product
+                <select v-model="input.product_rewarded_id" class="form-select mb-3">
+                    <option value="">Select Product</option>
+                    <option v-for="product in products" :key="product.id" :value="product.id">
+                        {{ product.code }}
+                    </option>
+                </select>
 
                 <div class="form-check mb-3">
                     <input type="checkbox" id="is_active" v-model="input.is_active" class="form-check-input">

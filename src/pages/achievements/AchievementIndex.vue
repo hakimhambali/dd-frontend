@@ -188,8 +188,8 @@ getAchievements()
                             <th>Name</th>
                             <th>Description</th>
                             <th>Max Score</th>
-                            <th>Reward Type</th>
                             <th>Reward Value</th>
+                            <th>Reward Product Code</th>
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
@@ -201,8 +201,13 @@ getAchievements()
                                 <td>{{ achievement.name }}</td>
                                 <td>{{ achievement.description }}</td>
                                 <td>{{ achievement.max_score }}</td>
-                                <td>{{ achievement.reward_type }}</td>
-                                <td>{{ achievement.reward_value }}</td>
+                                <td>
+                                    {{ (achievement.reward_value != null || achievement.reward_type != null) ? achievement.reward_value + ' ' + achievement.reward_type : 'N/A' }}
+                                </td>
+                                <td>
+                                    <span v-if="achievement.product_rewarded">{{ achievement.product_rewarded.code }}</span>
+                                    <span v-else>N/A</span>
+                                </td>
                                 <td>{{ achievement.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
@@ -239,7 +244,6 @@ getAchievements()
                     @created="getAchievements" 
                     @updated="getAchievements" />
 
-    <AchievementCreateModal @created="getAchievements" />
     <BasePrompt
         id="delete-user-prompt"
         type="danger"

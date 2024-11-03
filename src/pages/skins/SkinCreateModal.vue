@@ -2,6 +2,7 @@
 import SkinService from '@/services/SkinService'
 import { useToastStore } from '@/stores/toast'
 import { SkinTypeNameEnum } from '@/enums/SkinTypeEnum'
+import { GameCurrencyNameEnum } from '@/enums/GameCurrencyEnum'
 import type Skin from '@/types/Skin';
 import { ref, watch, computed } from 'vue';
 
@@ -23,13 +24,16 @@ const { addToast } = useToastStore()
 const input = ref({
     name: props.skin.product?.name || '',
     description: props.skin.product?.description || '',
-    price: props.skin.product?.price || null,
-    skin_type: props.skin.skin_type || SkinTypeNameEnum.SHIRT,
+    price_real: props.skin.product?.price_real || null,
+    price_game: props.skin.product?.price_game || null,
+    price_game_type: props.skin.product?.price_game_type || '',
+    skin_type: props.skin.skin_type || SkinTypeNameEnum.SKATEBOARD,
     is_active: props.skin.product?.is_active || true
 })
 
 const isProcessing = ref<boolean>(false)
 const isUpdateMode = computed(() => props.mode === 'update');
+const price_game_types = Object.values(GameCurrencyNameEnum)
 const skinTypes = Object.values(SkinTypeNameEnum)
 
 watch(
@@ -38,12 +42,26 @@ watch(
         input.value = {
             name: newSkin.product?.name || '',
             description: newSkin.product?.description || '',
-            price: newSkin.product?.price || null,
-            skin_type: newSkin.skin_type || SkinTypeNameEnum.SHIRT,
+            price_real: newSkin.product?.price_real || null,
+            price_game: newSkin.product?.price_game || null,
+            price_game_type: newSkin.product?.price_game_type || '',
+            skin_type: newSkin.skin_type || SkinTypeNameEnum.SKATEBOARD,
             is_active: newSkin.product?.is_active ?? true
         }
     },
     { immediate: true }
+)
+
+watch(
+    () => input.value.price_game,
+    (newPriceGame) => {
+        const gameTypeInput = document.getElementById('game_type') as HTMLSelectElement;
+        if (newPriceGame) {
+            gameTypeInput.setAttribute('required', 'true');
+        } else {
+            gameTypeInput.removeAttribute('required');
+        }
+    }
 )
 
 const handleSubmit = async () => {
@@ -77,7 +95,7 @@ const handleSubmit = async () => {
         addToast({
             type: 'danger',
             title: 'Error',
-            message: 'Failed to process. An error occurred.',
+            message: `Failed to process. ${error.response.data.message}`,
         })
     }
     isProcessing.value = false
@@ -87,8 +105,10 @@ const clearInput = () => {
     input.value = {
         name: '',
         description: '',
-        price: null,
-        skin_type: SkinTypeNameEnum.SHIRT,
+        price_real: null,
+        price_game: null,
+        price_game_type: '',
+        skin_type: SkinTypeNameEnum.SKATEBOARD,
         is_active: true
     }
 }
@@ -104,10 +124,19 @@ const clearInput = () => {
         <div class="modal-body">
 
             <form action="" id="skinForm" @submit.prevent="handleSubmit">
-                    Name*
+                Name*
                 <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
-                Price*
-                <input type="number" name="price" class="form-control mb-3" placeholder="Price" v-model="input.price" required step="0.01" min="0.01">
+                Price Real*
+                <input type="number" name="price_real" class="form-control mb-3" placeholder="Price Real" v-model="input.price_real" required step="0.01" min="0.01">
+                Price Game
+                <input type="number" name="price_game" class="form-control mb-3" placeholder="Price Game" v-model="input.price_game" min="1">
+                Price Game Type
+                <select name="price_game_type" class="form-select mb-3" v-model="input.price_game_type" id="game_type">
+                    <option value="">Select Price Game Type</option>
+                    <option v-for="price_game_type in price_game_types" :key="price_game_type" :value="price_game_type">
+                        {{ price_game_type }}
+                    </option>
+                </select>
                 Description
                 <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
                 Skin Type*

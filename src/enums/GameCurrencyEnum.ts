@@ -1,4 +1,4 @@
-export enum RewardTypeNameEnum {
+export enum GameCurrencyNameEnum {
     GOLD = 'Gold',
     GEM = 'Gem',
 }

@@ -115,7 +115,6 @@ getCurrencyHistories()
                             <th>#</th>
                             <th>Username</th>
                             <th>Amount</th>
-                            <th>Currency Type</th>
                             <th>Description</th>
                         </tr>
                     </thead>
@@ -124,8 +123,7 @@ getCurrencyHistories()
                             <tr class="align-middle" v-for="(currencyHistory, index) in currencyHistories" :key="currencyHistory.id">
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ currencyHistory.game_user.username }}</td>
-                                <td>{{ currencyHistory.amount }}</td>
-                                <td>{{ currencyHistory.currency_type }}</td>
+                                <td>{{ currencyHistory.amount }} {{ currencyHistory.currency_type }}</td>
                                 <td>{{ currencyHistory.description }}</td>
                             </tr>
                         </template>

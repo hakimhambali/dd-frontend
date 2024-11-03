@@ -188,8 +188,8 @@ getMissions()
                             <th>Name</th>
                             <th>Description</th>
                             <th>Max Score</th>
-                            <th>Reward Type</th>
                             <th>Reward Value</th>
+                            <th>Reward Product Code</th>
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
@@ -201,8 +201,13 @@ getMissions()
                                 <td>{{ mission.name }}</td>
                                 <td>{{ mission.description }}</td>
                                 <td>{{ mission.max_score }}</td>
-                                <td>{{ mission.reward_type }}</td>
-                                <td>{{ mission.reward_value }}</td>
+                                <td>
+                                    {{ (mission.reward_value != null || mission.reward_type != null) ? mission.reward_value + ' ' + mission.reward_type : 'N/A' }}
+                                </td>
+                                <td>
+                                    <span v-if="mission.product_rewarded">{{ mission.product_rewarded.code }}</span>
+                                    <span v-else>N/A</span>
+                                </td>
                                 <td>{{ mission.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
@@ -239,7 +244,6 @@ getMissions()
                     @created="getMissions" 
                     @updated="getMissions" />
 
-    <MissionCreateModal @created="getMissions" />
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
