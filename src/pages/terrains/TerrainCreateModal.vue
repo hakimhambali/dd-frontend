@@ -30,10 +30,8 @@ const input = ref({
 
 const isProcessing = ref<boolean>(false)
 
-// Determine if the form is in 'create' or 'update' mode
 const isUpdateMode = computed(() => props.mode === 'update');
 
-// Watch the mode prop to update the form inputs when a terrain is passed for editing
 watch(
     () => props.terrain,
     (newTerrain) => {
@@ -96,7 +94,7 @@ const clearInput = () => {
 </script>
 
 <template>
-    <BaseModal modal-id="addTerrainModal">
+    <BaseModal modal-id="addTerrainModal" modal-size="lg">
         <div class="modal-header">
             <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Terrain' : 'Add New Terrain' }}</h1>
             <button type="button" id="closeAddTerrainModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -108,7 +106,7 @@ const clearInput = () => {
                 <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
 
                 Description
-                <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
+                <textarea name="description" class="form-control mb-3" placeholder="Description" v-model="input.description" rows="2"></textarea>
 
                 <div class="form-check mb-3">
                     <input type="checkbox" id="is_default" v-model="input.is_default" class="form-check-input">

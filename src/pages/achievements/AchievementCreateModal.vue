@@ -57,7 +57,8 @@ watch(
             max_score: newAchievement.max_score || null,
             reward_type: newAchievement.reward_type || '',
             reward_value: newAchievement.reward_value || null,
-            is_active: newAchievement.is_active ?? true
+            is_active: newAchievement.is_active ?? true,
+            product_rewarded_id: newAchievement.product_rewarded_id || null,
         }
     },
     { immediate: true }
@@ -141,49 +142,57 @@ const clearInput = () => {
 </script>
 
 <template>
-    <BaseModal modal-id="addAchievementModal">
+    <BaseModal modal-id="addAchievementModal" modal-size="lg">
         <div class="modal-header">
             <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Achievement' : 'Add New Achievement' }}</h1>
             <button type="button" id="closeAddAchievementModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
             <form action="" id="achievementForm" @submit.prevent="handleSubmit">
-
-                Name*
-                <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
-
-                Description
-                <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
-
-                Maximum Score*
-                <input type="number" name="max_score" class="form-control mb-3" placeholder="Maximum Score" v-model="input.max_score" required step="0.01" min="0.01">
-
-                Reward Game Type
-                <select name="reward_type" class="form-select mb-3" v-model="input.reward_type" id="reward_type">
-                    <option value="">Select Reward Game Type</option>
-                    <option v-for="reward_type in rewardTypes" :key="reward_type" :value="reward_type">
-                        {{ reward_type }}
-                    </option>
-                </select>
-
-                Reward Game Value
-                <input type="number" name="reward_value" class="form-control mb-3" placeholder="Reward Game Value" v-model="input.reward_value" min="1">
-
-                Reward Product
-                <select v-model="input.product_rewarded_id" class="form-select mb-3">
-                    <option value="">Select Product</option>
-                    <option v-for="product in products" :key="product.id" :value="product.id">
-                        {{ product.code }}
-                    </option>
-                </select>
-
+                <div class="row">
+                    Name*
+                    <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
+                </div>
+                <div class="row">
+                    Description
+                    <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Maximum Score*
+                        <input type="number" name="max_score" class="form-control mb-3" placeholder="Maximum Score" v-model="input.max_score" required step="0.01" min="0.01">
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Reward Game Type
+                        <select name="reward_type" class="form-select mb-3" v-model="input.reward_type" id="reward_type">
+                            <option value="">Select Reward Game Type</option>
+                            <option v-for="reward_type in rewardTypes" :key="reward_type" :value="reward_type">
+                                {{ reward_type }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Reward Game Value
+                        <input type="number" name="reward_value" class="form-control mb-3" placeholder="Reward Game Value" v-model="input.reward_value" min="1">
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Reward Product
+                        <select v-model="input.product_rewarded_id" class="form-select mb-3">
+                            <option value=null>Select Product</option>
+                            <option v-for="product in products" :key="product.id" :value="product.id">
+                                {{ product.code }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-check mb-3">
                     <input type="checkbox" id="is_active" v-model="input.is_active" class="form-check-input">
                     <label for="is_active" class="form-check-label">
                         Active
                     </label>
                 </div>
-
             </form>
         </div>
         <div class="modal-footer">

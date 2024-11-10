@@ -116,7 +116,7 @@ const clearInput = () => {
 </script>
 
 <template>
-    <BaseModal modal-id="addSkinModal">
+    <BaseModal modal-id="addSkinModal" modal-size="lg">
         <div class="modal-header">
             <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Skin' : 'Add New Skin' }}</h1>
             <button type="button" id="closeAddSkinModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -124,27 +124,45 @@ const clearInput = () => {
         <div class="modal-body">
 
             <form action="" id="skinForm" @submit.prevent="handleSubmit">
-                Name*
-                <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
-                Price Real*
-                <input type="number" name="price_real" class="form-control mb-3" placeholder="Price Real" v-model="input.price_real" required step="0.01" min="0.01">
-                Price Game
-                <input type="number" name="price_game" class="form-control mb-3" placeholder="Price Game" v-model="input.price_game" min="1">
-                Price Game Type
-                <select name="price_game_type" class="form-select mb-3" v-model="input.price_game_type" id="game_type">
-                    <option value="">Select Price Game Type</option>
-                    <option v-for="price_game_type in price_game_types" :key="price_game_type" :value="price_game_type">
-                        {{ price_game_type }}
-                    </option>
-                </select>
-                Description
-                <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
-                Skin Type*
-                <select name="skin_type" class="form-control mb-3" v-model="input.skin_type" required>
-                    <option v-for="skin_type in skinTypes" :key="skin_type" :value="skin_type">
-                        {{ skin_type }}
-                    </option>
-                </select>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Name*
+                        <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Price Real*
+                        <input type="number" name="price_real" class="form-control mb-3" placeholder="Price Real" v-model="input.price_real" required step="0.01" min="0.01">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Price Game
+                        <input type="number" name="price_game" class="form-control mb-3" placeholder="Price Game" v-model="input.price_game" min="1">
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Price Game Type
+                        <select name="price_game_type" class="form-select mb-3" v-model="input.price_game_type" id="game_type">
+                            <option value="">Select Price Game Type</option>
+                            <option v-for="price_game_type in price_game_types" :key="price_game_type" :value="price_game_type">
+                                {{ price_game_type }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Description
+                        <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Skin Type*
+                        <select name="skin_type" class="form-select mb-3" v-model="input.skin_type" required>
+                            <option v-for="skin_type in skinTypes" :key="skin_type" :value="skin_type">
+                                {{ skin_type }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-check mb-3">
                     <input type="checkbox" id="is_active" v-model="input.is_active" class="form-check-input">
                     <label for="is_active" class="form-check-label">

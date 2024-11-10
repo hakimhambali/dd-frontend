@@ -252,9 +252,14 @@ getProducts()
         </div>
     </div>
 
-    <ProductCreateModal :product="productToEdit" :mode="productToEdit ? 'update' : 'create'" 
+    <!-- <ProductCreateModal :product="productToEdit" :mode="productToEdit ? 'update' : 'create'" 
                     @created="getProducts" 
-                    @updated="getProducts" />
+                    @updated="getProducts" /> -->
+
+    <ProductCreateModal :product="productToEdit ? { ...productToEdit } : undefined" :mode="productToEdit ? 'update' : 'create'"
+        @created="getProducts"
+        @updated="getProducts"
+    />
                     
     <BasePrompt
         id="delete-user-prompt"

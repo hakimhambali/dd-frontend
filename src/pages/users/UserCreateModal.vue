@@ -100,29 +100,47 @@ const clearInput = () => {
 </script>
 
 <template>
-    <BaseModal modal-id="addUserModal">
+    <BaseModal modal-id="addUserModal" modal-size="xl">
         <div class="modal-header">
             <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update User' : 'Add New User' }}</h1>
             <button type="button" id="closeAddUserModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
             <form action="" id="userForm" @submit.prevent="handleSubmit">
-                Full Name*
-                <input type="text" name="full_name" class="form-control mb-3" placeholder="Full Name" v-model="input.full_name" required>
-                Email*
-                <input type="email" name="email" class="form-control mb-3" placeholder="Email" v-model="input.email" required>
-                Staff No*
-                <input type="text" name="staff_no" class="form-control mb-3" placeholder="Staff No" v-model="input.staff_no" required>
-                IC No*
-                <input type="text" name="nric_passport" class="form-control mb-3" placeholder="IC No" v-model="input.nric_passport" required>
-                Phone No*
-                <input type="text" name="phone_number" class="form-control mb-3" placeholder="Phone No" v-model="input.phone_number" required>
-                Role*
-                <select name="role" class="form-control mb-3" v-model="input.role" required>
-                    <option v-for="role in roles" :key="role" :value="role">
-                        {{ role }}
-                    </option>
-                </select>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Full Name*
+                        <input type="text" name="full_name" class="form-control mb-3" placeholder="Full Name" v-model="input.full_name" required>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Email*
+                        <input type="email" name="email" class="form-control mb-3" placeholder="Email" v-model="input.email" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Staff No*
+                        <input type="text" name="staff_no" class="form-control mb-3" placeholder="Staff No" v-model="input.staff_no" required>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        IC No*
+                        <input type="text" name="nric_passport" class="form-control mb-3" placeholder="IC No" v-model="input.nric_passport" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Phone No*
+                        <input type="text" name="phone_number" class="form-control mb-3" placeholder="Phone No" v-model="input.phone_number" required>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Role*
+                        <select name="role" class="form-select mb-3" v-model="input.role" required>
+                            <option v-for="role in roles" :key="role" :value="role">
+                                {{ role }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
             </form>
         </div>
         <div class="modal-footer">

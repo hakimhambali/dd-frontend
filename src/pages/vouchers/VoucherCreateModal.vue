@@ -128,42 +128,53 @@ const clearInput = () => {
 </script>
 
 <template>
-    <BaseModal modal-id="addVoucherModal">
+    <BaseModal modal-id="addVoucherModal" modal-size="lg">
         <div class="modal-header">
             <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Voucher' : 'Add New Voucher' }}</h1>
             <button type="button" id="closeAddVoucherModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
             <form action="" id="voucherForm" @submit.prevent="handleSubmit">
-
-                Name*
-                <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
-
-                Description
-                <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
-
-                Minimum price for products
-                <input type="number" name="min_price" class="form-control mb-3" placeholder="Minimum Price" v-model="input.min_price" step="0.01" min="0.01">
-
-                Discount value*
-                <input type="number" name="discount_value" class="form-control mb-3" placeholder="Discount Value" v-model="input.discount_value" required step="0.01" min="0.01">
-
-                Expired time (day) after claimed
-                <input type="number" name="expired_time" class="form-control mb-3" placeholder="Expired time after claim" v-model="input.expired_time">
-
-                Maximum user can claim
-                <input type="number" name="max_claim" class="form-control mb-3" placeholder="Maximum user can claim" v-model="input.max_claim">
-
-                <div>
-                    <label for="start_date">Start Date</label>
-                    <input type="datetime-local" name="start_date" class="form-control mb-3" placeholder="Start Date" v-model="input.start_date">
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Name*
+                        <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Description
+                        <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
+                    </div>
                 </div>
-
-                <div>
-                    <label for="end_date">End Date</label>
-                    <input type="datetime-local" name="end_date" class="form-control mb-3" placeholder="End Date" v-model="input.end_date">
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Minimum price for products
+                        <input type="number" name="min_price" class="form-control mb-3" placeholder="Minimum Price" v-model="input.min_price" step="0.01" min="0.01">
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Discount value*
+                        <input type="number" name="discount_value" class="form-control mb-3" placeholder="Discount Value" v-model="input.discount_value" required step="0.01" min="0.01">
+                    </div>
                 </div>
-
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        Expired time (day) after claimed
+                        <input type="number" name="expired_time" class="form-control mb-3" placeholder="Expired time after claim" v-model="input.expired_time">
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        Maximum user can claim
+                        <input type="number" name="max_claim" class="form-control mb-3" placeholder="Maximum user can claim" v-model="input.max_claim">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        <label for="start_date">Start Date</label>
+                        <input type="datetime-local" name="start_date" class="form-control mb-3" placeholder="Start Date" v-model="input.start_date">
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <label for="end_date">End Date</label>
+                        <input type="datetime-local" name="end_date" class="form-control mb-3" placeholder="End Date" v-model="input.end_date">
+                    </div>
+                </div>
                 <div class="form-check mb-3">
                     <input type="checkbox" id="is_percentage_flatprice" v-model="input.is_percentage_flatprice" class="form-check-input">
                     <label for="is_percentage_flatprice" class="form-check-label">
