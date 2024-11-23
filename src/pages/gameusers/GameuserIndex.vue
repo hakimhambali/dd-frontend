@@ -210,6 +210,7 @@ getGameUsers()
                             <th>Gem</th>
                             <th>Gold</th>
                             <th>Highest Score</th>
+                            <th>Last Login</th>
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
@@ -228,6 +229,7 @@ getGameUsers()
                                 <td>{{ gameuser.gem_amount }}</td>
                                 <td>{{ gameuser.gold_amount }}</td>
                                 <td>{{ gameuser.highest_score }}m</td>
+                                <td>{{ new Date(gameuser.last_login).toLocaleDateString() }}</td>
                                 <td>{{ gameuser.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">

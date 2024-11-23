@@ -28,8 +28,10 @@ const itemIdToBeDeleted = ref<number>()
 const itemNameToBeDeleted = ref<string>()
 
 const filter = ref<{
+    code: string,
     item_type: string
 }>({
+    code: '',
     item_type: '',
 })
 
@@ -125,6 +127,10 @@ getItems()
 
             <div class="row mb-3">
                 <div class="col-12 col-md-auto">
+                    Code
+                    <input v-model="filter.code" type="text" class="form-control" placeholder="Code">
+                </div>
+                <div class="col-12 col-md-auto">
                     Item Type
                     <input v-model="filter.item_type" type="text" class="form-control" placeholder="Item Type">
                 </div>
@@ -151,6 +157,7 @@ getItems()
                     <thead>
                         <tr>
                             <th>#</th>
+                            <th>Code</th>
                             <th>Item Type</th>
                             <th class="text-center">Action</th>
                         </tr>
@@ -159,6 +166,7 @@ getItems()
                         <template v-if="items.length > 0">
                             <tr class="align-middle" v-for="(item, index) in items" :key="item.id">
                                 <td>{{ index + 1 }}</td>
+                                <td>{{ item.code }}</td>
                                 <td>{{ item.item_type }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">

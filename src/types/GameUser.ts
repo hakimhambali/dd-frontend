@@ -11,4 +11,5 @@ export default interface GameUser {
     total_play_time: number
     is_active: boolean
     highest_score: number
+    last_login: Date
 }

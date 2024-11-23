@@ -136,14 +136,12 @@ const clearInput = () => {
         <div class="modal-body">
             <form action="" id="voucherForm" @submit.prevent="handleSubmit">
                 <div class="row">
-                    <div class="col-md-6 col-sm-12">
-                        Name*
-                        <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
-                    </div>
-                    <div class="col-md-6 col-sm-12">
-                        Description
-                        <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
-                    </div>
+                    Name*
+                    <input type="text" name="name" class="form-control mb-3" placeholder="Name" v-model="input.name" required>
+                </div>
+                <div class="row">
+                    Description
+                    <input type="text" name="description" class="form-control mb-3" placeholder="Description" v-model="input.description">
                 </div>
                 <div class="row">
                     <div class="col-md-6 col-sm-12">

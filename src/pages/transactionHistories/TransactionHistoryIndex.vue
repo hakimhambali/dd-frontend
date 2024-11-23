@@ -145,7 +145,6 @@ getTransactionHistories()
                             <th>Username</th>
                             <th>Product Code</th>
                             <th>Total Real Price</th>
-                            <th>Total Game Price</th>
                             <th>Transaction Date</th>
                             <th>Voucher Used Name</th>
                             <th>Voucher Earned Name</th>
@@ -161,9 +160,6 @@ getTransactionHistories()
                                 <td>
                                     <span v-if="transactionHistory.paid_real_price">RM {{ transactionHistory.paid_real_price }}</span>
                                     <span v-else>N/A</span>
-                                </td>
-                                <td>
-                                    {{ (transactionHistory.paid_game_price != null || transactionHistory.game_price_type != null) ? transactionHistory.paid_game_price + ' ' + transactionHistory.game_price_type : 'N/A' }}
                                 </td>
                                 <td>{{ formatDate(transactionHistory.transaction_date) }}</td>
                                 <td>{{ transactionHistory.voucher_used?.name || 'N/A' }}</td>

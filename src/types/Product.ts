@@ -8,6 +8,6 @@ export default interface Product {
     description: string
     is_active: boolean
     product_type: string
-    items: { item_id: number; count: number }[];
+    items: { code: string; item_id: number; count: number }[];
     skin: { skin_type: string };
 }

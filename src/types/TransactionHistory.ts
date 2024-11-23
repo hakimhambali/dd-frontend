@@ -9,8 +9,6 @@ export default interface TransactionHistory {
     voucher_earned_id: number
     voucher_used_id: number
     paid_real_price: number
-    game_price_type: string
-    paid_game_price: number
     platform: string
     transaction_date: string
     game_user: GameUser

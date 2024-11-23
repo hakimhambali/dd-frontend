@@ -22,6 +22,7 @@ const emit = defineEmits(['created', 'updated'])
 const { addToast } = useToastStore()
 
 const input = ref({
+    code: props.skin.product?.code || '',
     name: props.skin.product?.name || '',
     description: props.skin.product?.description || '',
     price_real: props.skin.product?.price_real || null,
@@ -40,6 +41,7 @@ watch(
     () => props.skin,
     (newSkin) => {
         input.value = {
+            code: newSkin.product?.code || '',
             name: newSkin.product?.name || '',
             description: newSkin.product?.description || '',
             price_real: newSkin.product?.price_real || null,
@@ -103,6 +105,7 @@ const handleSubmit = async () => {
 
 const clearInput = () => {
     input.value = {
+        code: '',
         name: '',
         description: '',
         price_real: null,
@@ -124,6 +127,10 @@ const clearInput = () => {
         <div class="modal-body">
 
             <form action="" id="skinForm" @submit.prevent="handleSubmit">
+                <div v-if="isUpdateMode" class="row">
+                    Code
+                    <input type="text" name="code" class="form-control mb-3" placeholder="Code" v-model="input.code" disabled>
+                </div>
                 <div class="row">
                     <div class="col-md-6 col-sm-12">
                         Name*

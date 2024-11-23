@@ -20,6 +20,7 @@ const emit = defineEmits(['created', 'updated'])
 const { addToast } = useToastStore()
 
 const input = ref({
+    code: props.item.code || '',
     item_type: props.item.item_type || '',
 })
 
@@ -30,6 +31,7 @@ watch(
     () => props.item,
     (newItem) => {
         input.value = {
+            code: newItem.code || '',
             item_type: newItem.item_type || '',
         }
     },
@@ -75,6 +77,7 @@ const handleSubmit = async () => {
 
 const clearInput = () => {
     input.value = {
+        code: '',
         item_type: '',
     }
 }
@@ -89,6 +92,10 @@ const clearInput = () => {
         </div>
         <div class="modal-body">
             <form action="" id="itemForm" @submit.prevent="handleSubmit">
+                <div v-if="isUpdateMode">
+                    Code
+                    <input type="text" name="code" class="form-control mb-3" placeholder="Code" v-model="input.code" disabled>
+                </div>
                 Item Type*
                 <input type="text" name="item_type" class="form-control mb-3" placeholder="Item Type" v-model="input.item_type" required>
             </form>
