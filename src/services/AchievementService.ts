@@ -13,5 +13,11 @@ export default {
     },
     delete(id: number) {
         return http.delete(`achievements/${id}`)
+    },
+    permanentDelete(id:number) {
+        return http.delete(`achievements/permanentDestroy/${id}`)
+    },
+    restore(id:number) {
+        return http.patch(`achievements/restore/${id}`)
     }
 }

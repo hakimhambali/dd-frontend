@@ -10,4 +10,5 @@ export default interface Voucher {
     start_date?: string;
     end_date?: string;
     is_active: boolean;
+    deleted_at: Date;
 }

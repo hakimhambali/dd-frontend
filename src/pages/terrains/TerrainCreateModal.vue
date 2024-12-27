@@ -49,13 +49,17 @@ const handleSubmit = async () => {
     isProcessing.value = true
     try {
         if (isUpdateMode.value && props.terrain.id !== undefined) {
-            await TerrainService.update(props.terrain.id, input.value)
-            addToast({
-                type: 'success',
-                title: 'Updated',
-                message: `Terrain ${input.value.name} is successfully updated.`,
-            })
-            emit('updated')
+            const response = await TerrainService.update(props.terrain.id, input.value);
+            if (response.status === 200) {
+                addToast({
+                    type: 'success',
+                    title: 'Updated',
+                    message: `Terrain ${input.value.name} is successfully updated.`,
+                });
+                emit('updated');
+            } else {
+                throw new Error(response.data.message || 'Unknown error occurred');
+            }
         } else {
             const response = await TerrainService.store(input.value)
             if (response && response.status === 201) {
@@ -76,7 +80,7 @@ const handleSubmit = async () => {
         addToast({
             type: 'danger',
             title: 'Error',
-            message: `Failed to process. ${error.response.data.message}`,
+            message: `${error.response.data.error}. ${error.response.data.errors.name[0]}`,
         })
     }
     isProcessing.value = false

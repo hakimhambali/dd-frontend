@@ -13,5 +13,11 @@ export default {
     },    
     delete(id: number) {
         return http.delete(`terrains/${id}`)
+    },
+    permanentDelete(id:number) {
+        return http.delete(`terrains/permanentDestroy/${id}`)
+    },
+    restore(id:number) {
+        return http.patch(`terrains/restore/${id}`)
     }
 }

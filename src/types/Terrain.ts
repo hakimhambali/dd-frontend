@@ -4,4 +4,5 @@ export default interface Terrain {
     description?: string; 
     is_default: boolean;
     is_active: boolean;
+    deleted_at: Date
 }

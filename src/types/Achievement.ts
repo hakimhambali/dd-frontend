@@ -8,5 +8,6 @@ export default interface Achievement {
     reward_value: number;
     is_active: boolean;
     product_rewarded: Product | null;
-    product_rewarded_id?: number | null; 
+    product_rewarded_id?: number | null;
+    deleted_at: Date;
 }

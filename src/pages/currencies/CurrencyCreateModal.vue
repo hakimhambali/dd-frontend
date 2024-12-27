@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import SkinService from '@/services/SkinService'
+import CurrencyService from '@/services/CurrencyService'
 import { useToastStore } from '@/stores/toast'
-import { SkinTypeNameEnum } from '@/enums/SkinTypeEnum'
-import { SkinTierNameEnum } from '@/enums/SkinTierEnum'
 import { GameCurrencyNameEnum } from '@/enums/GameCurrencyEnum'
-import type Skin from '@/types/Skin';
+import type Currency from '@/types/Currency';
 import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
-    skin: {
-        type: Object as () => Partial<Skin>,
+    currency: {
+        type: Object as () => Partial<Currency>,
         default: () => ({})
     },
     mode: {
@@ -23,36 +21,34 @@ const emit = defineEmits(['created', 'updated'])
 const { addToast } = useToastStore()
 
 const input = ref({
-    code: props.skin.product?.code || '',
-    name: props.skin.product?.name || '',
-    description: props.skin.product?.description || '',
-    price_real: props.skin.product?.price_real || null,
-    price_game: props.skin.product?.price_game || null,
-    price_game_type: props.skin.product?.price_game_type || '',
-    skin_type: props.skin.skin_type || SkinTypeNameEnum.SKATEBOARD,
-    skin_tier: props.skin.skin_tier || SkinTierNameEnum.COMMON,
-    is_active: props.skin.product?.is_active || true
+    code: props.currency.product?.code || '',
+    name: props.currency.product?.name || '',
+    description: props.currency.product?.description || '',
+    price_real: props.currency.product?.price_real || null,
+    price_game: props.currency.product?.price_game || null,
+    price_game_type: props.currency.product?.price_game_type || '',
+    currency_type: props.currency.currency_type || GameCurrencyNameEnum.GEM,
+    currency_value: props.currency.currency_value || null,
+    is_active: props.currency.product?.is_active || true
 })
 
 const isProcessing = ref<boolean>(false)
 const isUpdateMode = computed(() => props.mode === 'update');
 const price_game_types = Object.values(GameCurrencyNameEnum)
-const skinTypes = Object.values(SkinTypeNameEnum)
-const skinTiers = Object.values(SkinTierNameEnum)
 
 watch(
-    () => props.skin,
-    (newSkin) => {
+    () => props.currency,
+    (newCurrency) => {
         input.value = {
-            code: newSkin.product?.code || '',
-            name: newSkin.product?.name || '',
-            description: newSkin.product?.description || '',
-            price_real: newSkin.product?.price_real || null,
-            price_game: newSkin.product?.price_game || null,
-            price_game_type: newSkin.product?.price_game_type || '',
-            skin_type: newSkin.skin_type || SkinTypeNameEnum.SKATEBOARD,
-            skin_tier: newSkin.skin_tier || SkinTierNameEnum.COMMON,
-            is_active: newSkin.product?.is_active ?? true
+            code: newCurrency.product?.code || '',
+            name: newCurrency.product?.name || '',
+            description: newCurrency.product?.description || '',
+            price_real: newCurrency.product?.price_real || null,
+            price_game: newCurrency.product?.price_game || null,
+            price_game_type: newCurrency.product?.price_game_type || '',
+            currency_type: newCurrency.currency_type || GameCurrencyNameEnum.GEM,
+            currency_value: newCurrency.currency_value || null,
+            is_active: newCurrency.product?.is_active ?? true
         }
     },
     { immediate: true }
@@ -73,27 +69,27 @@ watch(
 const handleSubmit = async () => {
     isProcessing.value = true
     try {
-        if (isUpdateMode.value && props.skin.id !== undefined) {
-            await SkinService.update(props.skin.id, input.value)
+        if (isUpdateMode.value && props.currency.id !== undefined) {
+            await CurrencyService.update(props.currency.id, input.value)
             addToast({
                 type: 'success',
                 title: 'Updated',
-                message: `Skin ${input.value.name} is successfully updated.`,
+                message: `Currency ${input.value.name} is successfully updated.`,
             })
             emit('updated')
         } else {
-            const response = await SkinService.store(input.value)
+            const response = await CurrencyService.store(input.value)
             if (response && response.status === 201) {
                 addToast({
                     type: 'success',
                     title: 'Success',
-                    message: `Skin ${input.value.name} is successfully added.`,
+                    message: `Currency ${input.value.name} is successfully added.`,
                 })
                 emit('created')
             }
         }
 
-        document.getElementById('closeAddSkinModalButton')?.click()
+        document.getElementById('closeAddCurrencyModalButton')?.click()
         clearInput()
 
     } catch (error) {
@@ -115,8 +111,8 @@ const clearInput = () => {
         price_real: null,
         price_game: null,
         price_game_type: '',
-        skin_type: SkinTypeNameEnum.SKATEBOARD,
-        skin_tier: SkinTierNameEnum.COMMON,
+        currency_type: GameCurrencyNameEnum.GEM,
+        currency_value: null,
         is_active: true
     }
 }
@@ -124,14 +120,14 @@ const clearInput = () => {
 </script>
 
 <template>
-    <BaseModal modal-id="addSkinModal" modal-size="lg">
+    <BaseModal modal-id="addCurrencyModal" modal-size="lg">
         <div class="modal-header">
-            <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Skin' : 'Add New Skin' }}</h1>
-            <button type="button" id="closeAddSkinModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h1 class="modal-title fs-5">{{ isUpdateMode ? 'Update Currency' : 'Add New Currency' }}</h1>
+            <button type="button" id="closeAddCurrencyModalButton" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
 
-            <form action="" id="skinForm" @submit.prevent="handleSubmit">
+            <form action="" id="currencyForm" @submit.prevent="handleSubmit">
                 <div v-if="isUpdateMode" class="row">
                     Code
                     <input type="text" name="code" class="form-control mb-3" placeholder="Code" v-model="input.code" disabled>
@@ -169,20 +165,16 @@ const clearInput = () => {
                 </div>
                 <div class="row">
                     <div class="col-md-6 col-sm-12">
-                        Skin Tier*
-                        <select name="skin_tier" class="form-select mb-3" v-model="input.skin_tier" required>
-                            <option v-for="skin_tier in skinTiers" :key="skin_tier" :value="skin_tier">
-                                {{ skin_tier }}
+                        Currency Type*
+                        <select name="currency_type" class="form-select mb-3" v-model="input.currency_type" required>
+                            <option v-for="currency_type in price_game_types" :key="currency_type" :value="currency_type">
+                                {{ currency_type }}
                             </option>
                         </select>
                     </div>
                     <div class="col-md-6 col-sm-12">
-                        Skin Type*
-                        <select name="skin_type" class="form-select mb-3" v-model="input.skin_type" required>
-                            <option v-for="skin_type in skinTypes" :key="skin_type" :value="skin_type">
-                                {{ skin_type }}
-                            </option>
-                        </select>
+                        Currency Value*
+                        <input type="number" name="currency_value" class="form-control mb-3" placeholder="Currency Value" v-model="input.currency_value" min="1">
                     </div>
                 </div>
                 <div class="form-check mb-3">
@@ -195,7 +187,7 @@ const clearInput = () => {
 
         </div>
         <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" form="skinForm" :disabled="isProcessing">
+            <button type="submit" class="btn btn-primary" form="currencyForm" :disabled="isProcessing">
                 <span v-if="!isProcessing">{{ isUpdateMode ? 'Update' : 'Add' }}</span>
                 <span v-else>
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

@@ -206,7 +206,7 @@ getItems()
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
-        title="Are you sure you want to delete this user?"
+        title="Are you sure you want to delete this item?"
         :message="`You won't be able to retrieve this ${itemNameToBeDeleted} anymore.`"
         action="Delete"
         @dismiss="isProceed"

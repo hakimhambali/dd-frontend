@@ -13,5 +13,11 @@ export default {
     },   
     delete(id: number) {
         return http.delete(`vouchers/${id}`)
+    },
+    permanentDelete(id:number) {
+        return http.delete(`vouchers/permanentDestroy/${id}`)
+    },
+    restore(id:number) {
+        return http.patch(`vouchers/restore/${id}`)
     }
 }

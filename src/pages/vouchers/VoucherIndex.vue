@@ -25,21 +25,20 @@ const {
 } = useMetaPage()
 
 const vouchers = ref<Array<Voucher>>([])
-const voucherIdToBeDeleted = ref<number>()
-const voucherNameToBeDeleted = ref<string>()
+const selectedVoucherId = ref<number>()
+const selectedVoucherName = ref<string>()
+const voucherDeleteType = ref<string>()
 
 const filter = ref<{
     name: string
     description: string | null
-    // min_price: number
     is_percentage_flatprice: boolean | string
-    is_active: boolean
-    // discount_value: number
+    status: string
 }>({
     name: '',
     description: '',
     is_percentage_flatprice: '',
-    is_active: true,
+    status: '',
 })
 
 const getVouchers = async () => {
@@ -70,15 +69,76 @@ const getVouchers = async () => {
     loading.value = false
 }
 
-const deleteVoucher = async (id: number): Promise<void> => {
+const voucherToEdit = ref<Voucher | undefined>(undefined)
+    const setVoucherToEdit = (voucher: Voucher) => {
+    voucherToEdit.value = voucher
+    console.log("voucherToEdit.value", voucherToEdit.value)
+}
+
+// delete voucher (tempo & permanent)
+const deleteVoucher = async (id: number, deleteType: string): Promise<void> => {
     loading.value = true
+    console.log('delete voucher: ',id,' + type: ',deleteType);
+
+    if(deleteType === "temporary") {
+        try {
+            await VoucherService.delete(id)
+            addToast({
+                type: 'success',
+                message: 'Voucher is successfully deleted. Voucher stil can be restore.'
+            })
+            await getVouchers()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    } else if (deleteType === "permanent") {
+        try {
+            await VoucherService.permanentDelete(id)
+            addToast({
+                type: 'success',
+                message: 'Voucher is successfully deleted.'
+            })
+            await getVouchers()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    }
+
+    loading.value = false
+}
+
+const setVoucherToBeDeleted = (voucherId: number, voucherName: string, deleteType: string) => {
+    selectedVoucherId.value = voucherId
+    selectedVoucherName.value = voucherName
+    voucherDeleteType.value = deleteType
+}
+
+const isProceed = (proceed: boolean) => {
+    if (proceed && selectedVoucherId.value && voucherDeleteType.value) {
+        deleteVoucher(selectedVoucherId.value, voucherDeleteType.value)
+    }
+}
+
+// Restore voucher
+const restoreVoucher = async (id: number): Promise<void> => {
+    loading.value = true
+    console.log('restore voucher: ',id);
 
     try {
-        console.log("voucher id",id);
-        await VoucherService.delete(id)
+        await VoucherService.restore(id)
         addToast({
             type: 'success',
-            message: 'Voucher is successfully deleted.'
+            message: 'Voucher is successfully restored.'
         })
         await getVouchers()
     } catch (error) {
@@ -93,20 +153,14 @@ const deleteVoucher = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const voucherToEdit = ref<Voucher | undefined>(undefined)
-    const setVoucherToEdit = (voucher: Voucher) => {
-    voucherToEdit.value = voucher
-    console.log("voucherToEdit.value", voucherToEdit.value)
+const setVoucherToBeRestored = (voucherId: number, voucherName: string) => {
+    selectedVoucherId.value = voucherId
+    selectedVoucherName.value = voucherName
 }
 
-const setVoucherToBeDeleted = (voucherId: number, voucherName: string) => {
-    voucherIdToBeDeleted.value = voucherId
-    voucherNameToBeDeleted.value = voucherName
-}
-
-const isProceed = (proceed: boolean) => {
-    if (proceed && voucherIdToBeDeleted.value) {
-        deleteVoucher(voucherIdToBeDeleted.value)
+const isProceedRestore = (proceed: boolean) => {
+    if (proceed && selectedVoucherId.value) {
+        restoreVoucher(selectedVoucherId.value)
     }
 }
 
@@ -154,10 +208,11 @@ getVouchers()
                 </div>
                 <div class="col-12 col-md-auto">
                     Status
-                    <select v-model="filter.is_active" class="form-select">
+                    <select v-model="filter.status" class="form-select">
                         <option value="">All statuses</option>
                         <option :value="true">Active</option>
                         <option :value="false">Inactive</option>
+                        <option value="deleted">Deleted</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto me-auto">
@@ -207,16 +262,30 @@ getVouchers()
                                 <td>{{ voucher.max_claim || 'No max user' }}</td>
                                 <td>{{ formatDate(voucher.start_date) }}</td>
                                 <td>{{ formatDate(voucher.end_date) }}</td>
-                                <td>{{ voucher.is_active ? 'Active' : 'Inactive' }}</td>
+                                <td :class="{'text-danger': voucher.deleted_at}">
+                                    {{ voucher.deleted_at ? 'Delete' : voucher.is_active ? 'Active' : 'Inactive' }}
+                                </td>
                                 <td class="text-center">
-                                    <div class="btn-group">
-                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addVoucherModal" @click="setVoucherToEdit(voucher)">
-                                            <BaseIcon name="pencil" />
-                                        </button>
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setVoucherToBeDeleted(voucher.id, voucher.name)">
-                                            <BaseIcon name="trash" />
-                                        </button>
-                                    </div>
+                                    <template v-if="voucher.deleted_at != null">
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#restore-user-prompt" @click="setVoucherToBeRestored(voucher.id, voucher.name)">
+                                                <BaseIcon name="folder-symlink" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-permanent-prompt" @click="setVoucherToBeDeleted(voucher.id, voucher.name, 'permanent')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addVoucherModal" @click="setVoucherToEdit(voucher)">
+                                                <BaseIcon name="pencil" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setVoucherToBeDeleted(voucher.id, voucher.name, 'temporary')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
                                 </td>
                             </tr>
                         </template>
@@ -246,9 +315,27 @@ getVouchers()
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
-        title="Are you sure you want to delete this user?"
-        :message="`You won't be able to retrieve this ${voucherNameToBeDeleted} anymore.`"
+        title="Are you sure you want to delete this voucher?"
+        :message="`You able to restore ${selectedVoucherName} on Deleted list.`"
         action="Delete"
         @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="delete-user-permanent-prompt"
+        type="danger"
+        title="Are you sure you want to delete this voucher?"
+        :message="`You won't be able to retrieve this ${selectedVoucherName} anymore.`"
+        action="Delete"
+        @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="restore-user-prompt"
+        type="danger"
+        title="Are you sure you want to restore this voucher?"
+        :message="`Restore ${selectedVoucherName} into the list.`"
+        action="Restore"
+        @dismiss="isProceedRestore"
     />
 </template>

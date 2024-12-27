@@ -12,4 +12,5 @@ export default interface GameUser {
     is_active: boolean
     highest_score: number
     last_login: Date
+    deleted_at: Date
 }

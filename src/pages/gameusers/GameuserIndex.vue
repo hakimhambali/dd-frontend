@@ -23,29 +23,24 @@ const {
 } = useMetaPage()
 
 const gameusers = ref<Array<GameUser>>([])
-const gameuserIdToBeDeleted = ref<number>()
-const gameuserNameToBeDeleted = ref<string>()
+const selectedGameuserId = ref<number>()
+const selectedGameuserName = ref<string>()
+const gameuserDeleteType = ref<string>()
 
 const filter = ref<{
     email: string
     username: string
-    // date_of_birth: Date | null;
     country: string
     platform: string
     register_date: Date | null;
-    // total_play_time: number
-    is_active: boolean
-    // highest_score: number
+    status: string
 }>({
     email: '',
     username: '',
-    // date_of_birth: null,
     country: '',
     platform: '',
     register_date: null,
-    // total_play_time: 0,
-    is_active: true,
-    // highest_score: 0
+    status: '',
 })
 
 const getGameUsers = async () => {
@@ -78,14 +73,70 @@ const getGameUsers = async () => {
     loading.value = false
 }
 
-const deleteGameUser = async (id: number): Promise<void> => {
+// delete user (tempo & permanent)
+const deleteGameUser = async (id: number, deleteType: string): Promise<void> => {
     loading.value = true
+    console.log('delete user: ',id, ' + type:', deleteType);
+
+    if(deleteType === "temporary") {
+        try {
+            await GameUserService.delete(id)
+            addToast({
+                type: 'success',
+                message: 'GameUser is successfully deleted. GameUser stil can be restore.'
+            })
+            await getGameUsers()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    } else if (deleteType === "permanent") {
+        try {
+            await GameUserService.permanentDelete(id)
+            addToast({
+                type: 'success',
+                message: 'GameUser is successfully deleted.'
+            })
+            await getGameUsers()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    }
+
+    loading.value = false
+}
+
+const setGameUserToBeDeleted = (gameuserId: number, gameuserName: string, deleteType: string) => {
+    selectedGameuserId.value = gameuserId
+    selectedGameuserName.value = gameuserName
+    gameuserDeleteType.value = deleteType
+}
+
+const isProceed = (proceed: boolean) => {
+    if (proceed && selectedGameuserId.value && gameuserDeleteType.value) {
+        deleteGameUser(selectedGameuserId.value, gameuserDeleteType.value)
+    }
+}
+
+// Restore game user
+const restoreGameUser = async (id: number): Promise<void> => {
+    loading.value = true
+    console.log('restore user: ',id);
 
     try {
-        await GameUserService.delete(id)
+        await GameUserService.restore(id)
         addToast({
             type: 'success',
-            message: 'GameUser is successfully deleted.'
+            message: 'GameUser is successfully restored.'
         })
         await getGameUsers()
     } catch (error) {
@@ -100,14 +151,14 @@ const deleteGameUser = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const setGameUserToBeDeleted = (gameuserId: number, gameuserName: string) => {
-    gameuserIdToBeDeleted.value = gameuserId
-    gameuserNameToBeDeleted.value = gameuserName
+const setGameUserToBeRestored = (gameuserId: number, gameuserName: string) => {
+    selectedGameuserId.value = gameuserId
+    selectedGameuserName.value = gameuserName
 }
 
-const isProceed = (proceed: boolean) => {
-    if (proceed && gameuserIdToBeDeleted.value) {
-        deleteGameUser(gameuserIdToBeDeleted.value)
+const isProceedRestore = (proceed: boolean) => {
+    if (proceed && selectedGameuserId.value) {
+        restoreGameUser(selectedGameuserId.value)
     }
 }
 
@@ -120,17 +171,8 @@ getGameUsers()
 </script>
 
 <template>
-    <div class="card">
+    <div class="card card-xl">
         <div class="card-body">
-            <div class="d-flex mb-3">
-                <!-- <div class="ms-auto">
-                    <button class="btn btn-success" @click.prevent="getGameUsers">
-                        <BaseIcon name="filter" />
-                        Filter
-                    </button>
-                </div> -->
-            </div>
-
             <div class="row mb-3">
                 <div class="col-12 col-md-auto">
                     Email
@@ -144,10 +186,6 @@ getGameUsers()
                     Country
                     <input v-model="filter.country" type="text" class="form-control" placeholder="Country">
                 </div>
-                <!-- <div class="col-12 col-md-auto">
-                    Date of Birth
-                    <input v-model="filter.date_of_birth" type="date" class="form-control" placeholder="Date Of Birth">
-                </div> -->
                 <div class="col-12 col-md-auto">
                     Platform
                     <select v-model="filter.platform" class="form-select">
@@ -161,22 +199,15 @@ getGameUsers()
                     Register Date
                     <input v-model="filter.register_date" type="date" class="form-control" placeholder="Register Date">
                 </div>
-                <!-- <div class="col-12 col-md-auto">
-                    Total Play Time (mins)
-                    <input v-model="filter.total_play_time" type="number" class="form-control" placeholder="Total Play Time" min="0">
-                </div> -->
                 <div class="col-12 col-md-auto">
                     Status
-                    <select v-model="filter.is_active" class="form-select">
+                    <select v-model="filter.status" class="form-select">
                         <option value="">All statuses</option>
                         <option :value="true">Active</option>
                         <option :value="false">Inactive</option>
+                        <option value="deleted">Deleted</option>
                     </select>
                 </div>
-                <!-- <div class="col-12 col-md-auto">
-                    Highest Score (m)
-                    <input v-model="filter.highest_score" type="number" class="form-control" placeholder="Highest Score" min="0">
-                </div> -->
                 <div class="col-12 col-md-auto me-auto">
                     <br>
                     <button class="btn btn-success" @click.prevent="getGameUsers">
@@ -230,13 +261,27 @@ getGameUsers()
                                 <td>{{ gameuser.gold_amount }}</td>
                                 <td>{{ gameuser.highest_score }}m</td>
                                 <td>{{ new Date(gameuser.last_login).toLocaleDateString() }}</td>
-                                <td>{{ gameuser.is_active ? 'Active' : 'Inactive' }}</td>
+                                <td :class="{'text-danger': gameuser.deleted_at}">
+                                    {{ gameuser.deleted_at ? 'Delete' : gameuser.is_active ? 'Active' : 'Inactive' }}
+                                </td>
                                 <td class="text-center">
-                                    <div class="btn-group">
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setGameUserToBeDeleted(gameuser.id, gameuser.username)">
-                                            <BaseIcon name="trash" />
-                                        </button>
-                                    </div>
+                                    <template v-if="gameuser.deleted_at != null">
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#restore-user-prompt" @click="setGameUserToBeRestored(gameuser.id, gameuser.username)">
+                                                <BaseIcon name="folder-symlink" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-permanent-prompt" @click="setGameUserToBeDeleted(gameuser.id, gameuser.username, 'permanent')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setGameUserToBeDeleted(gameuser.id, gameuser.username, 'temporary')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
                                 </td>
                             </tr>
                         </template>
@@ -259,13 +304,30 @@ getGameUsers()
         </div>
     </div>
 
-    <!-- <UserCreateModal @created="getGameUsers" /> -->
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
         title="Are you sure you want to delete this user?"
-        :message="`You won't be able to retrieve this ${gameuserNameToBeDeleted} anymore.`"
+        :message="`You able to restore ${selectedGameuserName} on Deleted list.`"
         action="Delete"
         @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="delete-user-permanent-prompt"
+        type="danger"
+        title="Are you sure you want to delete this user?"
+        :message="`You won't be able to retrieve this ${selectedGameuserName} anymore.`"
+        action="Delete"
+        @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="restore-user-prompt"
+        type="danger"
+        title="Are you sure you want to restore this user?"
+        :message="`Restore ${selectedGameuserName} into the list.`"
+        action="Restore"
+        @dismiss="isProceedRestore"
     />
 </template>

@@ -5,6 +5,7 @@ import GameUserIndex from '@/pages/gameusers/GameUserIndex.vue'
 import ProductIndex from '@/pages/products/ProductIndex.vue'
 import ItemIndex from '@/pages/items/ItemIndex.vue'
 import SkinIndex from '@/pages/skins/SkinIndex.vue'
+import CurrencyIndex from '@/pages/currencies/CurrencyIndex.vue'
 import VoucherIndex from '@/pages/vouchers/VoucherIndex.vue'
 import TerrainIndex from '@/pages/terrains/TerrainIndex.vue'
 import MissionIndex from '@/pages/missions/MissionIndex.vue'
@@ -73,6 +74,14 @@ const routes: Array<RouteRecordRaw> = [
                 component: SkinIndex,
                 meta: {
                     title: 'Skin'
+                },
+            },
+            {
+                path: '/currencies',
+                name: 'currencies-index',
+                component: CurrencyIndex,
+                meta: {
+                    title: 'Currency'
                 },
             },
             {

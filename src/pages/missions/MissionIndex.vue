@@ -25,8 +25,9 @@ const {
 } = useMetaPage()
 
 const missions = ref<Array<Mission>>([])
-const missionIdToBeDeleted = ref<number>()
-const missionNameToBeDeleted = ref<string>()
+const selectedMissionId = ref<number>()
+const selectedMissionName = ref<string>()
+const missionDeleteType = ref<string>()
 
 const filter = ref<{
     name: string
@@ -34,14 +35,14 @@ const filter = ref<{
     max_score: number | null
     reward_type: string
     reward_value: number | null
-    is_active: boolean
+    status: string
 }>({
     name: '',
     description: '',
     max_score: null,
     reward_type: '',
     reward_value: null,
-    is_active: true
+    status: ''
 })
 
 const getMissions = async () => {
@@ -72,15 +73,76 @@ const getMissions = async () => {
     loading.value = false
 }
 
-const deleteMission = async (id: number): Promise<void> => {
+const missionToEdit = ref<Mission | undefined>(undefined)
+    const setMissionToEdit = (mission: Mission) => {
+    missionToEdit.value = mission
+    console.log("missionToEdit.value", missionToEdit.value)
+}
+
+// delete mission (tempo & permanent)
+const deleteMission = async (id: number, deleteType: string): Promise<void> => {
     loading.value = true
+    console.log('delete mission: ',id,' + type: ',deleteType);
+
+    if(deleteType === "temporary") {
+        try {
+            await MissionService.delete(id)
+            addToast({
+                type: 'success',
+                message: 'Mission is successfully deleted. Mission stil can be restore.'
+            })
+            await getMissions()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    } else if (deleteType === "permanent") {
+        try {
+            await MissionService.permanentDelete(id)
+            addToast({
+                type: 'success',
+                message: 'Mission is successfully deleted.'
+            })
+            await getMissions()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    }
+
+    loading.value = false
+}
+
+const setMissionToBeDeleted = (missionId: number, missionName: string, deleteType: string) => {
+    selectedMissionId.value = missionId
+    selectedMissionName.value = missionName
+    missionDeleteType.value = deleteType
+}
+
+const isProceed = (proceed: boolean) => {
+    if (proceed && selectedMissionId.value && missionDeleteType.value) {
+        deleteMission(selectedMissionId.value, missionDeleteType.value)
+    }
+}
+
+// Restore Mission
+const restoreMission = async (id: number): Promise<void> => {
+    loading.value = true
+    console.log('restore mission: ',id);
 
     try {
-        console.log("mission id",id);
-        await MissionService.delete(id)
+        await MissionService.restore(id)
         addToast({
             type: 'success',
-            message: 'Mission is successfully deleted.'
+            message: 'Mission is successfully restored.'
         })
         await getMissions()
     } catch (error) {
@@ -95,20 +157,14 @@ const deleteMission = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const missionToEdit = ref<Mission | undefined>(undefined)
-    const setMissionToEdit = (mission: Mission) => {
-    missionToEdit.value = mission
-    console.log("missionToEdit.value", missionToEdit.value)
+const setMissionToBeRestored = (missionId: number, missionName: string) => {
+    selectedMissionId.value = missionId
+    selectedMissionName.value = missionName
 }
 
-const setMissionToBeDeleted = (missionId: number, missionName: string) => {
-    missionIdToBeDeleted.value = missionId
-    missionNameToBeDeleted.value = missionName
-}
-
-const isProceed = (proceed: boolean) => {
-    if (proceed && missionIdToBeDeleted.value) {
-        deleteMission(missionIdToBeDeleted.value)
+const isProceedRestore = (proceed: boolean) => {
+    if (proceed && selectedMissionId.value) {
+        restoreMission(selectedMissionId.value)
     }
 }
 
@@ -156,10 +212,11 @@ getMissions()
                 </div>
                 <div class="col-12 col-md-auto">
                     Status
-                    <select v-model="filter.is_active" class="form-select">
+                    <select v-model="filter.status" class="form-select">
                         <option value="">All statuses</option>
                         <option :value="true">Active</option>
                         <option :value="false">Inactive</option>
+                        <option value="deleted">Deleted</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto me-auto">
@@ -208,16 +265,30 @@ getMissions()
                                     <span v-if="mission.product_rewarded">{{ mission.product_rewarded.code }}</span>
                                     <span v-else>N/A</span>
                                 </td>
-                                <td>{{ mission.is_active ? 'Active' : 'Inactive' }}</td>
+                                <td :class="{'text-danger': mission.deleted_at}">
+                                    {{ mission.deleted_at ? 'Delete' : mission.is_active ? 'Active' : 'Inactive' }}
+                                </td>
                                 <td class="text-center">
-                                    <div class="btn-group">
-                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal" @click="setMissionToEdit(mission)">
-                                            <BaseIcon name="pencil" />
-                                        </button>
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setMissionToBeDeleted(mission.id, mission.name)">
-                                            <BaseIcon name="trash" />
-                                        </button>
-                                    </div>
+                                    <template v-if="mission.deleted_at != null">
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#restore-user-prompt" @click="setMissionToBeRestored(mission.id, mission.name)">
+                                                <BaseIcon name="folder-symlink" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-permanent-prompt" @click="setMissionToBeDeleted(mission.id, mission.name, 'permanent')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal" @click="setMissionToEdit(mission)">
+                                                <BaseIcon name="pencil" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setMissionToBeDeleted(mission.id, mission.name, 'temporary')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
                                 </td>
                             </tr>
                         </template>
@@ -247,9 +318,27 @@ getMissions()
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
-        title="Are you sure you want to delete this user?"
-        :message="`You won't be able to retrieve this ${missionNameToBeDeleted} anymore.`"
+        title="Are you sure you want to delete this mission?"
+        :message="`You able to restore ${selectedMissionName} on Deleted list.`"
         action="Delete"
         @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="delete-user-permanent-prompt"
+        type="danger"
+        title="Are you sure you want to delete this mission?"
+        :message="`You won't be able to retrieve this ${selectedMissionName} anymore.`"
+        action="Delete"
+        @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="restore-user-prompt"
+        type="danger"
+        title="Are you sure you want to restore this mission?"
+        :message="`Restore ${selectedMissionName} into the list.`"
+        action="Restore"
+        @dismiss="isProceedRestore"
     />
 </template>

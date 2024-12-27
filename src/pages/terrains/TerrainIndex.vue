@@ -25,19 +25,20 @@ const {
 } = useMetaPage()
 
 const terrains = ref<Array<Terrain>>([])
-const terrainIdToBeDeleted = ref<number>()
-const terrainNameToBeDeleted = ref<string>()
+const selectedTerrainId = ref<number>()
+const selectedTerrainName = ref<string>()
+const terrainDeleteType = ref<string>()
 
 const filter = ref<{
     name: string
     description: string | null
     is_default: boolean | string
-    is_active: boolean
+    status: string
 }>({
     name: '',
     description: '',
     is_default: '',
-    is_active: true,
+    status: '',
 })
 
 const getTerrains = async () => {
@@ -68,15 +69,76 @@ const getTerrains = async () => {
     loading.value = false
 }
 
-const deleteTerrain = async (id: number): Promise<void> => {
+const terrainToEdit = ref<Terrain | undefined>(undefined)
+    const setTerrainToEdit = (terrain: Terrain) => {
+    terrainToEdit.value = terrain
+    console.log("terrainToEdit.value", terrainToEdit.value)
+}
+
+// delete terrain (tempo & permanent)
+const deleteTerrain = async (id: number, deleteType: string): Promise<void> => {
     loading.value = true
+    console.log('delete terrain: ',id,' + type: ',deleteType);
+
+    if(deleteType === "temporary") {
+        try {
+            await TerrainService.delete(id)
+            addToast({
+                type: 'success',
+                message: 'Terrain is successfully deleted. Terrain stil can be restore.'
+            })
+            await getTerrains()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    } else if (deleteType === "permanent") {
+        try {
+            await TerrainService.permanentDelete(id)
+            addToast({
+                type: 'success',
+                message: 'Terrain is successfully deleted.'
+            })
+            await getTerrains()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    }
+
+    loading.value = false
+}
+
+const setTerrainToBeDeleted = (terrainId: number, terrainName: string, deleteType: string) => {
+    selectedTerrainId.value = terrainId
+    selectedTerrainName.value = terrainName
+    terrainDeleteType.value = deleteType
+}
+
+const isProceed = (proceed: boolean) => {
+    if (proceed && selectedTerrainId.value && terrainDeleteType.value) {
+        deleteTerrain(selectedTerrainId.value, terrainDeleteType.value)
+    }
+}
+
+// Restore terrain
+const restoreTerrain = async (id: number): Promise<void> => {
+    loading.value = true
+    console.log('restore terrain: ',id);
 
     try {
-        console.log("terrain id",id);
-        await TerrainService.delete(id)
+        await TerrainService.restore(id)
         addToast({
             type: 'success',
-            message: 'Terrain is successfully deleted.'
+            message: 'Terrain is successfully restored.'
         })
         await getTerrains()
     } catch (error) {
@@ -91,20 +153,14 @@ const deleteTerrain = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const terrainToEdit = ref<Terrain | undefined>(undefined)
-    const setTerrainToEdit = (terrain: Terrain) => {
-    terrainToEdit.value = terrain
-    console.log("terrainToEdit.value", terrainToEdit.value)
+const setTerrainToBeRestored = (terrainId: number, terrainName: string) => {
+    selectedTerrainId.value = terrainId
+    selectedTerrainName.value = terrainName
 }
 
-const setTerrainToBeDeleted = (terrainId: number, terrainName: string) => {
-    terrainIdToBeDeleted.value = terrainId
-    terrainNameToBeDeleted.value = terrainName
-}
-
-const isProceed = (proceed: boolean) => {
-    if (proceed && terrainIdToBeDeleted.value) {
-        deleteTerrain(terrainIdToBeDeleted.value)
+const isProceedRestore = (proceed: boolean) => {
+    if (proceed && selectedTerrainId.value) {
+        restoreTerrain(selectedTerrainId.value)
     }
 }
 
@@ -152,10 +208,11 @@ getTerrains()
                 </div>
                 <div class="col-12 col-md-auto">
                     Status
-                    <select v-model="filter.is_active" class="form-select">
+                    <select v-model="filter.status" class="form-select">
                         <option value="">All statuses</option>
                         <option :value="true">Active</option>
                         <option :value="false">Inactive</option>
+                        <option value="deleted">Deleted</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto me-auto">
@@ -195,16 +252,30 @@ getTerrains()
                                 <td>{{ terrain.name }}</td>
                                 <td>{{ terrain.description }}</td>
                                 <td>{{ terrain.is_default ? 'Default' : 'Not Default' }}</td>
-                                <td>{{ terrain.is_active ? 'Active' : 'Inactive' }}</td>
+                                <td :class="{'text-danger': terrain.deleted_at}">
+                                    {{ terrain.deleted_at ? 'Delete' : terrain.is_active ? 'Active' : 'Inactive' }}
+                                </td>
                                 <td class="text-center">
-                                    <div class="btn-group">
-                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addTerrainModal" @click="setTerrainToEdit(terrain)">
-                                            <BaseIcon name="pencil" />
-                                        </button>
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setTerrainToBeDeleted(terrain.id, terrain.name)">
-                                            <BaseIcon name="trash" />
-                                        </button>
-                                    </div>
+                                    <template v-if="terrain.deleted_at != null">
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#restore-user-prompt" @click="setTerrainToBeRestored(terrain.id, terrain.name)">
+                                                <BaseIcon name="folder-symlink" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-permanent-prompt" @click="setTerrainToBeDeleted(terrain.id, terrain.name, 'permanent')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addTerrainModal" @click="setTerrainToEdit(terrain)">
+                                                <BaseIcon name="pencil" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setTerrainToBeDeleted(terrain.id, terrain.name, 'temporary')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
                                 </td>
                             </tr>
                         </template>
@@ -234,9 +305,27 @@ getTerrains()
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
-        title="Are you sure you want to delete this user?"
-        :message="`You won't be able to retrieve this ${terrainNameToBeDeleted} anymore.`"
+        title="Are you sure you want to delete this terrain?"
+        :message="`You able to restore ${selectedTerrainName} on Deleted list.`"
         action="Delete"
         @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="delete-user-permanent-prompt"
+        type="danger"
+        title="Are you sure you want to delete this terrain?"
+        :message="`You won't be able to retrieve this ${selectedTerrainName} anymore.`"
+        action="Delete"
+        @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="restore-user-prompt"
+        type="danger"
+        title="Are you sure you want to restore this terrain?"
+        :message="`Restore ${selectedTerrainName} into the list.`"
+        action="Restore"
+        @dismiss="isProceedRestore"
     />
 </template>

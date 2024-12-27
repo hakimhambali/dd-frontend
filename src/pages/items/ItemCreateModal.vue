@@ -69,7 +69,7 @@ const handleSubmit = async () => {
         addToast({
             type: 'danger',
             title: 'Error',
-            message: `Failed to process. ${error.response.data.message}`,
+            message: `${error.response.data.error}. ${error.response.data.errors.item_type[0]}`,
         })
     }
     isProcessing.value = false

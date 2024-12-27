@@ -13,5 +13,11 @@ export default {
     },
     delete(id: number) {
         return http.delete(`gameusers/${id}`)
+    },
+    permanentDelete(id:number) {
+        return http.delete(`gameusers/permanentDestroy/${id}`)
+    },
+    restore(id:number) {
+        return http.patch(`gameusers/restore/${id}`)
     }
 }

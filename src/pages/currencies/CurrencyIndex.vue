@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import useMetaPage from '@/composables/meta-page'
-import SkinService from '@/services/SkinService'
-import SkinCreateModal from '@/pages/skins/SkinCreateModal.vue'
-import { SkinTypeNameEnum } from '@/enums/SkinTypeEnum'
-import { SkinTierNameEnum } from '@/enums/SkinTierEnum'
+import CurrencyService from '@/services/CurrencyService'
+import CurrencyCreateModal from '@/pages/currencies/CurrencyCreateModal.vue'
 import { useToastStore } from '@/stores/toast'
-import type Skin from '@/types/Skin'
+import type Currency from '@/types/Currency'
+import { GameCurrencyNameEnum } from '@/enums/GameCurrencyEnum'
 import { AxiosError } from 'axios'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -25,27 +24,25 @@ const {
     gotoPage
 } = useMetaPage()
 
-const skins = ref<Array<Skin>>([])
-const skinIdToBeDeleted = ref<number>()
-const skinNameToBeDeleted = ref<string>()
+const currencies = ref<Array<Currency>>([])
+const currencyIdToBeDeleted = ref<number>()
+const currencyNameToBeDeleted = ref<string>()
 
 const filter = ref<{
     code: string
     name: string
-    skin_type: string
-    skin_tier: string
+    currency_type: string
     description: string | null
     is_active: boolean
 }>({
     code: '',
     name: '',
-    skin_type: '',
-    skin_tier: '',
+    currency_type: '',
     description: '',
     is_active: true,
 })
 
-const getSkins = async () => {
+const getCurrencies = async () => {
     loading.value = true
 
     const query = {
@@ -59,9 +56,9 @@ const getSkins = async () => {
     console.log("Query being sent: ", query);
 
     try {
-        const response = await SkinService.index(query)
-        console.log("responseSkinService.index", response);
-        skins.value = response.data.data
+        const response = await CurrencyService.index(query)
+        console.log("responseCurrencyService.index", response);
+        currencies.value = response.data.data
         updateMetaPage(response.data.meta)
     } catch (error) {
         if (error instanceof AxiosError) {
@@ -75,17 +72,16 @@ const getSkins = async () => {
     loading.value = false
 }
 
-const deleteSkin = async (id: number): Promise<void> => {
+const deleteCurrency = async (id: number): Promise<void> => {
     loading.value = true
 
     try {
-        console.log("skin id",id);
-        await SkinService.delete(id)
+        await CurrencyService.delete(id)
         addToast({
             type: 'success',
-            message: 'Skin is successfully deleted.'
+            message: 'Currency is successfully deleted.'
         })
-        await getSkins()
+        await getCurrencies()
     } catch (error) {
         if (error instanceof AxiosError) {
             addToast({
@@ -98,29 +94,29 @@ const deleteSkin = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const skinToEdit = ref<Skin | undefined>(undefined)
-    const setSkinToEdit = (skin: Skin) => {
-    skinToEdit.value = skin
-    console.log("skinToEdit.value", skinToEdit.value)
+const currencyToEdit = ref<Currency | undefined>(undefined)
+    const setCurrencyToEdit = (currency: Currency) => {
+        currencyToEdit.value = currency
+    console.log("currencyToEdit.value", currencyToEdit.value)
 }
 
-const setSkinToBeDeleted = (skinId: number, skinName: string) => {
-    skinIdToBeDeleted.value = skinId
-    skinNameToBeDeleted.value = skinName
+const setCurrencyToBeDeleted = (currencyId: number, currencyName: string) => {
+    currencyIdToBeDeleted.value = currencyId
+    currencyNameToBeDeleted.value = currencyName
 }
 
 const isProceed = (proceed: boolean) => {
-    if (proceed && skinIdToBeDeleted.value) {
-        deleteSkin(skinIdToBeDeleted.value)
+    if (proceed && currencyIdToBeDeleted.value) {
+        deleteCurrency(currencyIdToBeDeleted.value)
     }
 }
 
 watch(
     () => metaPageTriggered.value,
-    () => getSkins()
+    () => getCurrencies()
 )
 
-getSkins()
+getCurrencies()
 </script>
 
 <template>
@@ -128,9 +124,9 @@ getSkins()
         <div class="card-body">
             <div class="d-flex mb-3">
                 <div class="ms-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSkinModal" @click="skinToEdit = undefined">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCurrencyModal" @click="currencyToEdit = undefined">
                         <BaseIcon name="user-plus" />
-                        Add Skin
+                        Add Currency
                     </button>
                 </div>
             </div>
@@ -145,21 +141,11 @@ getSkins()
                     <input v-model="filter.name" type="text" class="form-control" placeholder="Name">
                 </div>
                 <div class="col-12 col-md-auto">
-                    Skin Type
-                    <select v-model="filter.skin_type" class="form-select">
+                    Currency Type
+                    <select v-model="filter.currency_type" class="form-select">
                         <option value="">All types</option>
-                        <option value="skateboard">Skateboard</option>
-                        <option value="outfit">Outfit</option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-auto">
-                    Skin Tier
-                    <select v-model="filter.skin_tier" class="form-select">
-                        <option value="">All types</option>
-                        <option value="common">Common</option>
-                        <option value="uncommon">Uncommon</option>
-                        <option value="rare">Rare</option>
-                        <option value="lagendary">Lagendary</option>
+                        <option value="Gem">Gem</option>
+                        <option value="Gold">Gold</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto">
@@ -176,7 +162,7 @@ getSkins()
                 </div>
                 <div class="col-12 col-md-auto me-auto">
                     <br>
-                    <button class="btn btn-success" @click.prevent="getSkins">
+                    <button class="btn btn-success" @click.prevent="getCurrencies">
                         <BaseIcon name="filter" />
                         Filter
                     </button>
@@ -201,33 +187,33 @@ getSkins()
                             <th>Name</th>
                             <th>Real Price</th>
                             <th>Game Price</th>
-                            <th>Skin Type</th>
-                            <th>Skin Tier</th>
+                            <th>Currency Type</th>
+                            <th>Currency value</th>
                             <th>Description</th>
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template v-if="skins.length > 0">
-                            <tr class="align-middle" v-for="(skin, index) in skins" :key="skin.id">
+                        <template v-if="currencies.length > 0">
+                            <tr class="align-middle" v-for="(currency, index) in currencies" :key="currency.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>{{ skin.product.code }}</td>
-                                <td>{{ skin.product.name }}</td>
-                                <td>RM {{ skin.product.price_real }}</td>
+                                <td>{{ currency.product.code }}</td>
+                                <td>{{ currency.product.name }}</td>
+                                <td>RM {{ currency.product.price_real }}</td>
                                 <td>
-                                    {{ (skin.product.price_game != null || skin.product.price_game_type != null) ? skin.product.price_game + ' ' + skin.product.price_game_type : 'N/A' }}
+                                    {{ (currency.product.price_game != null || currency.product.price_game_type != null) ? currency.product.price_game + ' ' + currency.product.price_game_type : 'N/A' }}
                                 </td>
-                                <td>{{ skin.skin_type }}</td>
-                                <td>{{ skin.skin_tier }}</td>
-                                <td>{{ skin.product.description }}</td>
-                                <td>{{ skin.product.is_active ? 'Active' : 'Inactive' }}</td>
+                                <td>{{ currency.currency_type }}</td>
+                                <td>{{ currency.currency_value }}</td>
+                                <td>{{ currency.product.description }}</td>
+                                <td>{{ currency.product.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
                                     <div class="btn-group">
-                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addSkinModal" @click="setSkinToEdit(skin)">
+                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addCurrencyModal" @click="setCurrencyToEdit(currency)">
                                             <BaseIcon name="pencil" />
                                         </button>
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setSkinToBeDeleted(skin.id, skin.product.name)">
+                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setCurrencyToBeDeleted(currency.id, currency.product.name)">
                                             <BaseIcon name="trash" />
                                         </button>
                                     </div>
@@ -253,15 +239,15 @@ getSkins()
         </div>
     </div>
 
-    <SkinCreateModal :skin="skinToEdit" :mode="skinToEdit ? 'update' : 'create'" 
-                    @created="getSkins" 
-                    @updated="getSkins" />
+    <CurrencyCreateModal :currency="currencyToEdit" :mode="currencyToEdit ? 'update' : 'create'" 
+                    @created="getCurrencies" 
+                    @updated="getCurrencies" />
 
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
-        title="Are you sure you want to delete this skin?"
-        :message="`You won't be able to retrieve this ${skinNameToBeDeleted} anymore.`"
+        title="Are you sure you want to delete this currency?"
+        :message="`You won't be able to retrieve this ${currencyNameToBeDeleted} anymore.`"
         action="Delete"
         @dismiss="isProceed"
     />

@@ -122,12 +122,27 @@ const handleSubmit = async () => {
         clearInput()
 
     } catch (error) {
-        console.error("Error in operation:", error)
-        addToast({
-            type: 'danger',
-            title: 'Error',
-            message: `Failed to process. ${error.response.data.message}`,
-        })
+        console.error("Error in operation:", error);
+        if (error.response.data.errors?.name?.[0]) {
+            addToast({
+                type: 'danger',
+                title: 'Error',
+                message: `${error.response.data.error}. ${error.response.data.errors.name[0]}`,
+            })
+        } else if (error.response.data.errors?.items?.[0]) {
+            addToast({
+                type: 'danger',
+                title: 'Error',
+                message: `${error.response.data.error}. ${error.response.data.errors.items[0]}`,
+            })
+        } else {
+            addToast({
+                type: 'danger',
+                title: 'Error',
+                message: `${error.response.data.error}`,
+            })
+        }
+            
     }
     isProcessing.value = false
 }

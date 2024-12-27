@@ -13,5 +13,11 @@ export default {
     },
     delete(id: number) {
         return http.delete(`missions/${id}`)
+    },
+    permanentDelete(id:number) {
+        return http.delete(`missions/permanentDestroy/${id}`)
+    },
+    restore(id:number) {
+        return http.patch(`missions/restore/${id}`)
     }
 }

@@ -10,4 +10,5 @@ export default interface Product {
     product_type: string
     items: { code: string; item_id: number; count: number }[];
     skin: { skin_type: string };
+    currency: { currency_type: string; currency_value: number };
 }

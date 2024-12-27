@@ -247,7 +247,7 @@ getUsers()
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
-        title="Are you sure you want to delete this user?"
+        title="Are you sure you want to delete this admin user?"
         :message="`You won't be able to retrieve this ${userNameToBeDeleted} anymore.`"
         action="Delete"
         @dismiss="isProceed"

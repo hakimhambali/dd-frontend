@@ -146,6 +146,7 @@ getProducts()
                         <option value="">All types</option>
                         <option value="Item">Item Consumable</option>
                         <option value="Skin">Skin</option>
+                        <option value="Currency">Currency</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto">
@@ -209,6 +210,9 @@ getProducts()
                                     <template v-if="product.skin">
                                         {{ product.skin.skin_type }}
                                     </template>
+                                    <template v-else-if="product.currency">
+                                        {{ product.currency.currency_type }}
+                                    </template>
                                     <template v-else>
                                         <ul v-if="product.items.length > 0">
                                             <li v-for="item in product.items" :key="item.id">{{ item.item_type }} - {{ item.count }}</li>
@@ -219,7 +223,7 @@ getProducts()
                                 <td>{{ product.description || 'N/A' }}</td>
                                 <td>{{ product.is_active ? 'Active' : 'Inactive' }}</td>
                                 <td class="text-center">
-                                    <template v-if="product.skin"></template>
+                                    <template v-if="product.skin || product.currency"></template>
                                     <template v-else>
                                         <div class="btn-group">
                                             <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal" @click="setProductToEdit(product)">
@@ -264,7 +268,7 @@ getProducts()
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
-        title="Are you sure you want to delete this user?"
+        title="Are you sure you want to delete this product?"
         :message="`You won't be able to retrieve this ${productNameToBeDeleted} anymore.`"
         action="Delete"
         @dismiss="isProceed"

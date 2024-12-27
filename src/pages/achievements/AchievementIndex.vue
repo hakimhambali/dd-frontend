@@ -25,8 +25,9 @@ const {
 } = useMetaPage()
 
 const achievements = ref<Array<Achievement>>([])
-const achievementIdToBeDeleted = ref<number>()
-const achievementNameToBeDeleted = ref<string>()
+const selectedAchievementId = ref<number>()
+const selectedAchievementName = ref<string>()
+const achievementDeleteType = ref<string>()
 
 const filter = ref<{
     name: string
@@ -34,14 +35,14 @@ const filter = ref<{
     max_score: number | null
     reward_type: string
     reward_value: number | null
-    is_active: boolean
+    status: string
 }>({
     name: '',
     description: '',
     max_score: null,
     reward_type: '',
     reward_value: null,
-    is_active: true
+    status: ''
 })
 
 const getAchievements = async () => {
@@ -72,15 +73,76 @@ const getAchievements = async () => {
     loading.value = false
 }
 
-const deleteAchievement = async (id: number): Promise<void> => {
+const achievementToEdit = ref<Achievement | undefined>(undefined)
+    const setAchievementToEdit = (achievement: Achievement) => {
+    achievementToEdit.value = achievement
+    console.log("achievementToEdit.value", achievementToEdit.value)
+}
+
+// Delete achievement (tempo & permanent)
+const deleteAchievement = async (id: number, deleteType: string): Promise<void> => {
     loading.value = true
+    console.log('delete achievement: ',id,' + type: ',deleteType);
+
+    if(deleteType === "temporary") {
+        try {
+            await AchievementService.delete(id)
+            addToast({
+                type: 'success',
+                message: 'Achievement is successfully deleted. Achievement stil can be restore.'
+            })
+            await getAchievements()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    } else if (deleteType === "permanent") {
+        try {
+            await AchievementService.permanentDelete(id)
+            addToast({
+                type: 'success',
+                message: 'Achievement is successfully deleted.'
+            })
+            await getAchievements()
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                addToast({
+                    type: 'danger',
+                    message: error.response?.data.message
+                })
+            }
+        }
+    }
+
+    loading.value = false
+}
+
+const setAchievementToBeDeleted = (achievementId: number, achievementName: string, deleteType: string) => {
+    selectedAchievementId.value = achievementId
+    selectedAchievementName.value = achievementName
+    achievementDeleteType.value = deleteType
+}
+
+const isProceed = (proceed: boolean) => {
+    if (proceed && selectedAchievementId.value && achievementDeleteType.value) {
+        deleteAchievement(selectedAchievementId.value, achievementDeleteType.value)
+    }
+}
+
+// Restore achievement
+const restoreAchievement = async (id: number): Promise<void> => {
+    loading.value = true
+    console.log('restore achievement: ',id);
 
     try {
-        console.log("achievement id",id);
-        await AchievementService.delete(id)
+        await AchievementService.restore(id)
         addToast({
             type: 'success',
-            message: 'Achievement is successfully deleted.'
+            message: 'Achievement is successfully restored.'
         })
         await getAchievements()
     } catch (error) {
@@ -95,20 +157,14 @@ const deleteAchievement = async (id: number): Promise<void> => {
     loading.value = false
 }
 
-const achievementToEdit = ref<Achievement | undefined>(undefined)
-    const setAchievementToEdit = (achievement: Achievement) => {
-    achievementToEdit.value = achievement
-    console.log("achievementToEdit.value", achievementToEdit.value)
+const setAchievementToBeRestored = (achievementId: number, achievementName: string) => {
+    selectedAchievementId.value = achievementId
+    selectedAchievementName.value = achievementName
 }
 
-const setAchievementToBeDeleted = (achievementId: number, achievementName: string) => {
-    achievementIdToBeDeleted.value = achievementId
-    achievementNameToBeDeleted.value = achievementName
-}
-
-const isProceed = (proceed: boolean) => {
-    if (proceed && achievementIdToBeDeleted.value) {
-        deleteAchievement(achievementIdToBeDeleted.value)
+const isProceedRestore = (proceed: boolean) => {
+    if (proceed && selectedAchievementId.value) {
+        restoreAchievement(selectedAchievementId.value)
     }
 }
 
@@ -156,10 +212,11 @@ getAchievements()
                 </div>
                 <div class="col-12 col-md-auto">
                     Status
-                    <select v-model="filter.is_active" class="form-select">
+                    <select v-model="filter.status" class="form-select">
                         <option value="">All statuses</option>
                         <option :value="true">Active</option>
                         <option :value="false">Inactive</option>
+                        <option value="deleted">Deleted</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-auto me-auto">
@@ -208,16 +265,30 @@ getAchievements()
                                     <span v-if="achievement.product_rewarded">{{ achievement.product_rewarded.code }}</span>
                                     <span v-else>N/A</span>
                                 </td>
-                                <td>{{ achievement.is_active ? 'Active' : 'Inactive' }}</td>
+                                <td :class="{'text-danger': achievement.deleted_at}">
+                                    {{ achievement.deleted_at ? 'Delete' : achievement.is_active ? 'Active' : 'Inactive' }}
+                                </td>
                                 <td class="text-center">
-                                    <div class="btn-group">
-                                        <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addAchievementModal" @click="setAchievementToEdit(achievement)">
-                                            <BaseIcon name="pencil" />
-                                        </button>
-                                        <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setAchievementToBeDeleted(achievement.id, achievement.name)">
-                                            <BaseIcon name="trash" />
-                                        </button>
-                                    </div>
+                                    <template v-if="achievement.deleted_at != null">
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#restore-user-prompt" @click="setAchievementToBeRestored(achievement.id, achievement.name)">
+                                                <BaseIcon name="folder-symlink" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-permanent-prompt" @click="setAchievementToBeDeleted(achievement.id, achievement.name, 'permanent')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div class="btn-group">
+                                            <button class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#addAchievementModal" @click="setAchievementToEdit(achievement)">
+                                                <BaseIcon name="pencil" />
+                                            </button>
+                                            <button class="btn btn-icon btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-prompt" @click="setAchievementToBeDeleted(achievement.id, achievement.name, 'temporary')">
+                                                <BaseIcon name="trash" />
+                                            </button>
+                                        </div>
+                                    </template>
                                 </td>
                             </tr>
                         </template>
@@ -247,9 +318,27 @@ getAchievements()
     <BasePrompt
         id="delete-user-prompt"
         type="danger"
-        title="Are you sure you want to delete this user?"
-        :message="`You won't be able to retrieve this ${achievementNameToBeDeleted} anymore.`"
+        title="Are you sure you want to delete this achievement?"
+        :message="`You able to restore ${selectedAchievementName} on Deleted list.`"
         action="Delete"
         @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="delete-user-permanent-prompt"
+        type="danger"
+        title="Are you sure you want to delete this achievement?"
+        :message="`You won't be able to retrieve this ${selectedAchievementName} anymore.`"
+        action="Delete"
+        @dismiss="isProceed"
+    />
+
+    <BasePrompt
+        id="restore-user-prompt"
+        type="danger"
+        title="Are you sure you want to restore this achievement?"
+        :message="`Restore ${selectedAchievementName} into the list.`"
+        action="Restore"
+        @dismiss="isProceedRestore"
     />
 </template>
