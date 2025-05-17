@@ -2,12 +2,39 @@
 import AuthService from '@/services/AuthService'
 import UserService from '@/services/UserService'
 import useIsAuthStore from '@/stores/auth'
-import { computed } from 'vue'
+import useUserStore from '@/stores/user'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
 const { revokeUser } = useIsAuthStore()
+const userStore = useUserStore()
+
+const loading = ref(false)
+
+const fetchCurrentUser = async () => {
+  try {
+    loading.value = true
+    const response = await UserService.me()
+    const user = response.data.data
+
+    userStore.$patch({
+      id: user.id,
+      email: user.email,
+      fullName: user.profile?.full_name || '',
+      role: user.role || '',
+    })
+  } catch (error) {
+    console.error('Failed to fetch current user:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(async () => {
+  await fetchCurrentUser()
+})
 
 const links = computed(() => {
     const links = [
@@ -183,10 +210,10 @@ const logout = async (): Promise<void> => {
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
                         <span class="avatar avatar-sm" style="background-image: url(profile1.png)"></span>
-                        <div class="d-none d-xl-block ps-2">
-                            <div>John</div>
-                            <div class="mt-1 small text-secondary">Full Stack Developer</div>
-                        </div>
+                    <div class="d-none d-xl-block ps-2">
+                    <div>{{ userStore.fullName }}</div>
+                    <div class="mt-1 small text-secondary">{{ userStore.role }}</div>
+                    </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#">Profile</a></li>

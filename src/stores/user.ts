@@ -1,18 +1,20 @@
 import { defineStore } from 'pinia'
 
 interface UserState {
-    id: string | null
-    name: string | null
-    email: string | null
+  id: number | null
+  email: string | null
+  fullName: string | null
+  role: string | null
 }
 
 const useUserStore = defineStore('user', {
-    state: (): UserState => ({
-        id: null,
-        name: null,
-        email: null,
-    }),
-    persist: true,
+  state: (): UserState => ({
+    id: null,
+    email: null,
+    fullName: null,
+    role: null,
+  }),
+  persist: true,
 })
 
 export default useUserStore

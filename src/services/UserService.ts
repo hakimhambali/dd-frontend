@@ -13,5 +13,9 @@ export default {
     },   
     delete(id: number) {
         return http.delete(`admin/users/${id}`)
+    },
+
+    me() {
+        return http.get('admin/users/me')
     }
 }
