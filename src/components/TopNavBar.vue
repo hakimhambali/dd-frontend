@@ -16,7 +16,8 @@ const loading = ref(false)
 const fetchCurrentUser = async () => {
   try {
     loading.value = true
-    const response = await UserService.me()
+    const response = await UserService.getMyProfile()
+    console.log("getMyProfile", response);
     const user = response.data.data
 
     userStore.$patch({
@@ -155,6 +156,7 @@ const logout = async (): Promise<void> => {
     try {
         await AuthService.logout()
         revokeUser()
+        userStore.reset()
         router.push({ name: 'login' })
     } catch (error) {
         console.error(error)
@@ -216,7 +218,7 @@ const logout = async (): Promise<void> => {
                     </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <!-- <li><a class="dropdown-item" href="#">Profile</a></li> -->
                         <li><a class="dropdown-item" href="#" @click.prevent="logout">Logout</a></li>
                     </ul>
                 </div>

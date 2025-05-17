@@ -98,10 +98,11 @@ const handleSubmit = async () => {
 
     } catch (error) {
         console.error("Error in operation:", error)
+        const errorMessages = Object.values(error.response.data.errors).flat().join(' ');
         addToast({
             type: 'danger',
             title: 'Error',
-            message: `${error.response.data.error}. ${error.response.data.errors.name[0]}`,
+            message: errorMessages,
         })
     }
     isProcessing.value = false

@@ -1,3 +1,4 @@
+// stores/user.ts
 import { defineStore } from 'pinia'
 
 interface UserState {
@@ -14,6 +15,16 @@ const useUserStore = defineStore('user', {
     fullName: null,
     role: null,
   }),
+  actions: {
+    reset() {
+      this.$patch({
+        id: null,
+        email: null,
+        fullName: null,
+        role: null,
+      })
+    }
+  },
   persist: true,
 })
 

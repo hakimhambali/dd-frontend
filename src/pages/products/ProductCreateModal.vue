@@ -123,26 +123,12 @@ const handleSubmit = async () => {
 
     } catch (error) {
         console.error("Error in operation:", error);
-        if (error.response.data.errors?.name?.[0]) {
-            addToast({
-                type: 'danger',
-                title: 'Error',
-                message: `${error.response.data.error}. ${error.response.data.errors.name[0]}`,
-            })
-        } else if (error.response.data.errors?.items?.[0]) {
-            addToast({
-                type: 'danger',
-                title: 'Error',
-                message: `${error.response.data.error}. ${error.response.data.errors.items[0]}`,
-            })
-        } else {
-            addToast({
-                type: 'danger',
-                title: 'Error',
-                message: `${error.response.data.error}`,
-            })
-        }
-            
+        const errorMessages = Object.values(error.response.data.errors).flat().join(' ');
+        addToast({
+            type: 'danger',
+            title: 'Error',
+            message: errorMessages,
+        }) 
     }
     isProcessing.value = false
 }

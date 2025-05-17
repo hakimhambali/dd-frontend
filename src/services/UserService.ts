@@ -15,7 +15,7 @@ export default {
         return http.delete(`admin/users/${id}`)
     },
 
-    me() {
-        return http.get('admin/users/me')
+    getMyProfile() {
+        return http.get('profiles/get-my-profile')
     }
 }
