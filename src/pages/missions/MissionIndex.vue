@@ -246,7 +246,7 @@ getMissions()
                             <th>Description</th>
                             <th>Max Score</th>
                             <th>Reward Value</th>
-                            <th>Reward Product Code</th>
+                            <!-- <th>Reward Product Code</th> -->
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
@@ -261,10 +261,10 @@ getMissions()
                                 <td>
                                     {{ (mission.reward_value != null || mission.reward_type != null) ? mission.reward_value + ' ' + mission.reward_type : 'N/A' }}
                                 </td>
-                                <td>
+                                <!-- <td>
                                     <span v-if="mission.product_rewarded">{{ mission.product_rewarded.code }}</span>
                                     <span v-else>N/A</span>
-                                </td>
+                                </td> -->
                                 <td :class="{'text-danger': mission.deleted_at}">
                                     {{ mission.deleted_at ? 'Delete' : mission.is_active ? 'Active' : 'Inactive' }}
                                 </td>

@@ -1,7 +1,7 @@
 export default interface Ad {
     id: number;
     skips: number;
-    real_price: number;
+    price_real: number;
     is_active: boolean
     deleted_at: Date;
 }

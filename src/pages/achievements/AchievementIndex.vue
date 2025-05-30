@@ -246,7 +246,7 @@ getAchievements()
                             <th>Description</th>
                             <th>Max Score</th>
                             <th>Reward Value</th>
-                            <th>Reward Product Code</th>
+                            <!-- <th>Reward Product Code</th> -->
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
@@ -261,10 +261,10 @@ getAchievements()
                                 <td>
                                     {{ (achievement.reward_value != null || achievement.reward_type != null) ? achievement.reward_value + ' ' + achievement.reward_type : 'N/A' }}
                                 </td>
-                                <td>
+                                <!-- <td>
                                     <span v-if="achievement.product_rewarded">{{ achievement.product_rewarded.code }}</span>
                                     <span v-else>N/A</span>
-                                </td>
+                                </td> -->
                                 <td :class="{'text-danger': achievement.deleted_at}">
                                     {{ achievement.deleted_at ? 'Delete' : achievement.is_active ? 'Active' : 'Inactive' }}
                                 </td>

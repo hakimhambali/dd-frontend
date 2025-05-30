@@ -227,7 +227,7 @@ getAds()
                             <tr class="align-middle" v-for="(ad, index) in ads" :key="ad.id">
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ ad.skips }}</td>
-                                <td>{{ ad.real_price }}</td>
+                                <td>{{ ad.price_real }}</td>
                                 <td :class="{'text-danger': ad.deleted_at}">
                                     {{ ad.deleted_at ? 'Delete' : ad.is_active ? 'Active' : 'Inactive' }}
                                 </td>

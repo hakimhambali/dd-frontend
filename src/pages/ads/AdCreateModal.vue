@@ -21,7 +21,7 @@ const { addToast } = useToastStore()
 
 const input = ref({
     skips: props.ad.skips || 0,
-    real_price: props.ad.real_price || null,
+    price_real: props.ad.price_real || null,
     is_active: props.ad.is_active || true
 })
 
@@ -33,7 +33,7 @@ watch(
     (newAd) => {
         input.value = {
             skips: newAd.skips || 0,
-            real_price: newAd.real_price || null,
+            price_real: newAd.price_real || null,
             is_active: newAd.is_active ?? true
         }
     },
@@ -81,7 +81,7 @@ const handleSubmit = async () => {
 const clearInput = () => {
     input.value = {
         skips: 0,
-        real_price: null,
+        price_real: null,
         is_active: true
     }
 }
@@ -103,7 +103,7 @@ const clearInput = () => {
                     </div>
                     <div class="col-md-6 col-sm-12">
                         Real Price
-                        <input type="number" name="real_price" class="form-control mb-3" placeholder="Real Price" v-model="input.real_price" step="0.01" min="0.01">
+                        <input type="number" name="price_real" class="form-control mb-3" placeholder="Real Price" v-model="input.price_real" step="0.01" min="0.01">
                     </div>
                     <div class="form-check mb-3">
                         <input type="checkbox" id="is_active" v-model="input.is_active" class="form-check-input">

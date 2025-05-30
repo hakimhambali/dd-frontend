@@ -158,7 +158,7 @@ getTransactionHistories()
                                 <td>{{ transactionHistory.game_user.username }}</td>
                                 <td>{{ transactionHistory.product.code }}</td>
                                 <td>
-                                    <span v-if="transactionHistory.paid_real_price">RM {{ transactionHistory.paid_real_price }}</span>
+                                    <span v-if="transactionHistory.paid_price_real">RM {{ transactionHistory.paid_price_real }}</span>
                                     <span v-else>N/A</span>
                                 </td>
                                 <td>{{ formatDate(transactionHistory.transaction_date) }}</td>
