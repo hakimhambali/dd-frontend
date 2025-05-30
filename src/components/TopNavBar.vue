@@ -84,6 +84,12 @@ const links = computed(() => {
             ],
         },
         {
+            path: '/ads',
+            text: 'Ads',
+            icon: 'ticket',
+            active: false,
+        },
+        {
             path: '/vouchers',
             text: 'Vouchers',
             icon: 'ticket',
